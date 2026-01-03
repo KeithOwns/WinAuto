@@ -104,7 +104,7 @@ if (Test-Path $ConfigPath) {
             $AppsList += $json.BaseApps
         }
     } catch {
-        Write-Warning "Could not parse existing config."
+        Write-LeftAligned "$FGRed$Char_Warn Could not parse existing config.$Reset"
     }
 }
 

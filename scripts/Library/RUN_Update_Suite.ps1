@@ -21,7 +21,7 @@ Write-Header "SUITE UPDATE"
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Write-LeftAligned "$FGRed$Char_Warn Git is not installed or not in PATH.$Reset"
     Write-LeftAligned "Please install Git to use this feature."
-    $null = Wait-KeyPressWithTimeout -Seconds 10 -OnTick $TickAction
+    Invoke-AnimatedPause -Timeout 10
     exit
 }
 
@@ -29,7 +29,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 if (-not (Test-Path "$PSScriptRoot\..\..\.git")) {
     # PSScriptRoot is scripts\Main -> ..\ is scripts -> ..\..\ is Root
     Write-LeftAligned "$FGRed$Char_Warn This folder does not appear to be a Git repository.$Reset"
-    $null = Wait-KeyPressWithTimeout -Seconds 10 -OnTick $TickAction
+    Invoke-AnimatedPause -Timeout 10
     exit
 }
 
@@ -66,7 +66,7 @@ try {
 
 Write-Host ""
 Write-Boundary
-$null = Wait-KeyPressWithTimeout -Seconds 10 -OnTick $TickAction
+Invoke-AnimatedPause -Timeout 10
 Write-Host ""
 
 

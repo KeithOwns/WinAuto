@@ -70,7 +70,7 @@ try {
 }
 
 Write-Host ""
-$null = Wait-KeyPressWithTimeout -Seconds 10 -OnTick $TickAction
+Invoke-AnimatedPause -Timeout 10
 Write-Host ""
 
 

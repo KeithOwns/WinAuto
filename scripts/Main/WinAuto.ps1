@@ -12,6 +12,9 @@
 $Global:WinAutoCompactMode = $true
 $Global:WinAutoManualActions = @()
 
+# Disable Console QuickEdit to prevent hanging
+Disable-QuickEdit
+
 # Ensure log directory exists
 if (-not (Test-Path $Global:WinAutoLogDir)) { New-Item -Path $Global:WinAutoLogDir -ItemType Directory -Force | Out-Null }
 Write-Log "WinAuto Session Started" -Level INFO

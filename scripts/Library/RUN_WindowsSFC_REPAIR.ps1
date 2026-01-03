@@ -97,7 +97,7 @@ Write-Boundary
 Write-Centered "$FGGreen REPAIR FLOW COMPLETE $Reset"
 Write-Boundary
 
-$null = Wait-KeyPressWithTimeout -Seconds 10 -OnTick $TickAction
+Invoke-AnimatedPause -Timeout 10
 Write-Host ""
 
 

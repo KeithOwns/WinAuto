@@ -23,6 +23,11 @@ $ErrorActionPreference = 'Stop'
   Installs a list of required applications in a guided process (Configurable).
 #>
 
+function Write-ScriptText {
+    param([string]$Text, [string]$Color = $FGGray)
+    Write-LeftAligned "$Color$Text$Reset"
+}
+
 function Write-Stamp {
   param([string]$Tag = "")
   # Output suppressed per user request
@@ -142,7 +147,11 @@ function Test-AppConfiguration {
   if (($App.Type -eq 'MSI' -or $App.Type -eq 'EXE') -and -not ($App.ContainsKey('Url') -or $App.ContainsKey('Urls') -or $App.ContainsKey('InstallerPath'))) {
     $errors += "$($App.Type) type requires Url, Urls, or InstallerPath for app '$($App.AppName)'"
   }
-  if ($errors.Count -gt 0) { Write-Error "Configuration errors:`n$($errors -join "`n")"; return $false }
+  if ($errors.Count -gt 0) { 
+      Write-LeftAligned "$FGRed$Char_RedCross Configuration errors:$Reset"
+      foreach ($err in $errors) { Write-LeftAligned "$FGRed - $err$Reset" }
+      return $false 
+  }
   return $true
 }
 
@@ -410,7 +419,7 @@ Write-Host ""
 Write-ScriptText "Validating app configurations..."
 $configValid = $true
 foreach ($app in $RequiredApps) { if (-not (Test-AppConfiguration -App $app)) { $configValid = $false } }
-if (-not $configValid) { Write-Error "Configuration validation failed."; return }
+if (-not $configValid) { Write-LeftAligned "$FGRed$Char_RedCross Configuration validation failed.$Reset"; return }
 Write-Host "  $FGGreen$Char_HeavyCheck Configuration validation passed.$Reset"
 Write-Stamp "Config validated"
 

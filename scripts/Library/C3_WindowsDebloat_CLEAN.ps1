@@ -28,8 +28,8 @@ function Configure-Privacy {
         if (-not (Test-Path "HKCU:\Software\Policies\Microsoft\Windows\CloudContent")) { New-Item -Path "HKCU:\Software\Policies\Microsoft\Windows\CloudContent" -Force | Out-Null }
         Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\CloudContent" -Name "DisableTailoredExperiencesWithDiagnosticData" -Value 1 -Type DWord -Force
         
-        Write-Success "Privacy hardening applied."
-    } catch { Write-Failure "Privacy settings error: $($_.Exception.Message)" }
+        Write-LeftAligned "$FGGreen$Char_CheckMark Privacy hardening applied.$Reset"
+    } catch { Write-LeftAligned "$FGRed$Char_FailureX Privacy settings error: $($_.Exception.Message)$Reset" }
 }
 
 # --- MAIN EXECUTION ---

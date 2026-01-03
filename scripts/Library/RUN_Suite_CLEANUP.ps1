@@ -105,7 +105,7 @@ del "%~f0"
     Write-Host ""
     Write-LeftAligned "$FGGreen$Char_BallotCheck Files kept.$Reset"
     
-    $null = Wait-KeyPressWithTimeout -Seconds 10 -OnTick $TickAction
+    Invoke-AnimatedPause -Timeout 10
 }
 Write-Host ""
 

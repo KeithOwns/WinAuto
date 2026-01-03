@@ -7,6 +7,33 @@
 # --- GLOBAL RESOURCES ---
 . "$PSScriptRoot\Global_Resources.ps1"
 
+# --- CONSOLE SETTINGS ---
+
+function Disable-QuickEdit {
+    try {
+        $kernel32 = Add-Type -MemberDefinition @"
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetStdHandle(int nStdHandle);
+        [DllImport("kernel32.dll")]
+        public static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+        [DllImport("kernel32.dll")]
+        public static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+"@ -Name "Kernel32" -Namespace Win32 -PassThru
+
+        $STD_INPUT_HANDLE = -10
+        $ENABLE_QUICK_EDIT_MODE = 0x0040
+        
+        $handle = $kernel32::GetStdHandle($STD_INPUT_HANDLE)
+        $mode = 0
+        if ($kernel32::GetConsoleMode($handle, [ref]$mode)) {
+            $mode = $mode -band (-bnot $ENABLE_QUICK_EDIT_MODE)
+            $null = $kernel32::SetConsoleMode($handle, $mode)
+        }
+    } catch {
+        Write-Log "Failed to disable QuickEdit mode: $($_.Exception.Message)" -Level WARNING
+    }
+}
+
 # --- FORMATTING HELPERS ---
 
 function Get-VisualWidth {
@@ -188,6 +215,29 @@ function Write-Log {
     }
 }
 
+function Get-WinAutoLastRun {
+    param([string]$Module = "Maintenance")
+    $StateFile = "$Global:WinAutoLogDir\WinAuto_State.json"
+    if (Test-Path $StateFile) {
+        try {
+            $State = Get-Content $StateFile -Raw | ConvertFrom-Json
+            if ($State.$Module) { return $State.$Module }
+        } catch {}
+    }
+    return "Never"
+}
+
+function Set-WinAutoLastRun {
+    param([string]$Module = "Maintenance")
+    $StateFile = "$Global:WinAutoLogDir\WinAuto_State.json"
+    $State = if (Test-Path $StateFile) { Get-Content $StateFile -Raw | ConvertFrom-Json } else { New-Object PSCustomObject }
+    if (-not $State) { $State = New-Object PSCustomObject }
+    
+    Add-Member -InputObject $State -MemberType NoteProperty -Name $Module -Value (Get-Date -Format "yyyy-MM-dd HH:mm:ss") -Force
+    
+    $State | ConvertTo-Json | Set-Content $StateFile -Force
+}
+
 function Get-RegistryValue {
     param([Parameter(Mandatory)] [string]$Path, [Parameter(Mandatory)] [string]$Name)
     try {
@@ -225,6 +275,29 @@ function Set-RegistryString {
 
 # --- TIMEOUT LOGIC ---
 
+$Global:TickAction = {
+    param($ElapsedTimespan, $ActionText = "CONTINUE", $Timeout = 10, $PromptCursorTop)
+    
+    # If PromptCursorTop not provided, assume current (though might flicker)
+    if ($null -eq $PromptCursorTop) { $PromptCursorTop = [Console]::CursorTop }
+
+    $WiggleFrame = [Math]::Floor($ElapsedTimespan.TotalMilliseconds / 500)
+    $IsRight = ($WiggleFrame % 2) -eq 1
+    if ($IsRight) { $CurrentChars = @(" ", $Char_Finger, "[", "E", "n", "t", "e", "r", "]", " ") } 
+    else { $CurrentChars = @($Char_Finger, " ", "[", "E", "n", "t", "e", "r", "]", " ") }
+    $FilledCount = [Math]::Floor($ElapsedTimespan.TotalSeconds)
+    if ($FilledCount -gt $Timeout) { $FilledCount = $Timeout }
+    
+    $DynamicPart = ""
+    for ($i = 0; $i -lt 10; $i++) {
+        $Char = $CurrentChars[$i]
+        if ($i -lt $FilledCount) { $DynamicPart += "${BGYellow}${FGBlack}$Char${Reset}" } 
+        else { if ($Char -eq " ") { $DynamicPart += " " } else { $DynamicPart += "${FGYellow}$Char${Reset}" } }
+    }
+    $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}|${FGDarkGray} or any other key ${FGWhite}to SKIP$Char_Skip${Reset}"
+    try { [Console]::SetCursorPosition(0, $PromptCursorTop); Write-Centered $PromptStr } catch {}
+}
+
 function Wait-KeyPressWithTimeout {
     param(
         [int]$Seconds = 10,
@@ -247,26 +320,14 @@ function Invoke-AnimatedPause {
     param([string]$ActionText = "CONTINUE", [int]$Timeout = 10)
     Write-Host ""
     $PromptCursorTop = [Console]::CursorTop
-    $TickAction = {
-        param($ElapsedTimespan)
-        $WiggleFrame = [Math]::Floor($ElapsedTimespan.TotalMilliseconds / 500)
-        $IsRight = ($WiggleFrame % 2) -eq 1
-        if ($IsRight) { $CurrentChars = @(" ", $Char_Finger, "[", "E", "n", "t", "e", "r", "]", " ") } 
-        else { $CurrentChars = @($Char_Finger, " ", "[", "E", "n", "t", "e", "r", "]", " ") }
-        $FilledCount = [Math]::Floor($ElapsedTimespan.TotalSeconds)
-        if ($FilledCount -gt $Timeout) { $FilledCount = $Timeout }
-        
-        $DynamicPart = ""
-        for ($i = 0; $i -lt 10; $i++) {
-            $Char = $CurrentChars[$i]
-            if ($i -lt $FilledCount) { $DynamicPart += "${BGYellow}${FGBlack}$Char${Reset}" } 
-            else { if ($Char -eq " ") { $DynamicPart += " " } else { $DynamicPart += "${FGYellow}$Char${Reset}" } }
-        }
-        $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}|${FGDarkGray} or any other key ${FGWhite}to SKIP$Char_Skip${Reset}"
-        try { [Console]::SetCursorPosition(0, $PromptCursorTop); Write-Centered $PromptStr } catch {}
+    
+    # Create a wrapper that passes the local context to the global TickAction
+    $LocalTick = {
+        param($Elapsed)
+        & $Global:TickAction -ElapsedTimespan $Elapsed -ActionText $ActionText -Timeout $Timeout -PromptCursorTop $PromptCursorTop
     }
 
-    $res = Wait-KeyPressWithTimeout -Seconds $Timeout -OnTick $TickAction
+    $res = Wait-KeyPressWithTimeout -Seconds $Timeout -OnTick $LocalTick
     Write-Host ""
     return $res
 }

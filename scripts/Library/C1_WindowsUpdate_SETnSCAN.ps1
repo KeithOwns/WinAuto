@@ -388,8 +388,8 @@ function Invoke-WinUpdateCheck {
     }
     
     if (-not $buttonFound) {
-            Write-LeftAligned "$FGDarkMagenta$Char_Warn Could not find update buttons$Reset"
-            Write-Log -Message "Could not find update buttons in Settings" -Level WARNING
+            Write-LeftAligned "$FGGray$Char_Info No pending update buttons detected in Settings.$Reset"
+            Write-Log -Message "No actionable update buttons found in Settings (System may be up-to-date)." -Level INFO
     }
     
     trap {

@@ -23,6 +23,9 @@ Trap {
 
 # --- MAIN EXECUTION ---
 Write-Header "WINDOWS MAINTENANCE PHASE"
+$lastRun = Get-WinAutoLastRun -Module "Maintenance"
+Write-LeftAligned "$FGGray Last Run: $FGWhite$lastRun$Reset"
+Write-Boundary
 
 # 1. SYSTEM PRE-CHECK
 Write-Log "Starting Maintenance Phase" -Level INFO
@@ -40,6 +43,7 @@ Write-Log "Starting Maintenance Phase" -Level INFO
 
 Write-Host ""
 Write-Centered "$FGGreen MAINTENANCE COMPLETE $Reset"
+Set-WinAutoLastRun -Module "Maintenance"
 Write-Log "Maintenance Phase Complete. Errors (if any) logged to: $Global:WinAutoErrorLogPath" -Level INFO
 $Global:WinAutoErrorLogPath = $null # Reset
 Write-Footer
