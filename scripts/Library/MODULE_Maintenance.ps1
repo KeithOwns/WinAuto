@@ -6,6 +6,8 @@
     Fully automated maintenance of Windows 11. Non-blocking.
 #>
 
+param([switch]$SmartRun)
+
 # --- SHARED FUNCTIONS ---
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
 $Global:WinAutoCompactMode = $true
@@ -21,25 +23,51 @@ Trap {
     Continue
 }
 
+# --- HELPER: Smart Check ---
+function Test-RunNeeded {
+    param($Key, $Days)
+    if (-not $SmartRun) { return $true }
+    $last = Get-WinAutoLastRun -Module $Key
+    if ($last -eq "Never") { return $true }
+    $date = Get-Date $last
+    if ((Get-Date) -gt $date.AddDays($Days)) { return $true }
+    
+    Write-LeftAligned "$FGGreen$Char_CheckMark Skipping $Key (Run < $Days days ago).$Reset"
+    return $false
+}
+
 # --- MAIN EXECUTION ---
 Write-Header "WINDOWS MAINTENANCE PHASE"
 $lastRun = Get-WinAutoLastRun -Module "Maintenance"
 Write-LeftAligned "$FGGray Last Run: $FGWhite$lastRun$Reset"
+if ($SmartRun) { Write-LeftAligned "$FGCyan Smart Mode Active$Reset" }
 Write-Boundary
 
 # 1. SYSTEM PRE-CHECK
 Write-Log "Starting Maintenance Phase" -Level INFO
 & "$PSScriptRoot\CHECK_System_PreCheck.ps1"
 
-# 2. UPDATES
+# 2. UPDATES (Always Run)
 & "$PSScriptRoot\C1_WindowsUpdate_SETnSCAN.ps1" -AutoRun
 
-# 3. REPAIR
-& "$PSScriptRoot\RUN_WindowsSFC_REPAIR.ps1"
+# 3. REPAIR (SFC - 30 Days)
+if (Test-RunNeeded -Key "Maintenance_SFC" -Days 30) {
+    & "$PSScriptRoot\RUN_WindowsSFC_REPAIR.ps1"
+    Set-WinAutoLastRun -Module "Maintenance_SFC"
+}
 
 # 4. OPTIMIZATION
-& "$PSScriptRoot\RUN_OptimizeDisks-WinAuto.ps1"
-& "$PSScriptRoot\RUN_SystemCleanup-WinAuto.ps1"
+# Disk Optimization (7 Days)
+if (Test-RunNeeded -Key "Maintenance_Disk" -Days 7) {
+    & "$PSScriptRoot\RUN_OptimizeDisks-WinAuto.ps1"
+    Set-WinAutoLastRun -Module "Maintenance_Disk"
+}
+
+# System Cleanup (7 Days)
+if (Test-RunNeeded -Key "Maintenance_Cleanup" -Days 7) {
+    & "$PSScriptRoot\RUN_SystemCleanup-WinAuto.ps1"
+    Set-WinAutoLastRun -Module "Maintenance_Cleanup"
+}
 
 Write-Host ""
 Write-Centered "$FGGreen MAINTENANCE COMPLETE $Reset"

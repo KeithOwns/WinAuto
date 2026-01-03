@@ -1,20 +1,13 @@
-﻿# WinAuto gitignore
+﻿# Ignore Windows system files
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Junk and Backups
-Archive/
-nppBackup/
-*.bak
+# Ignore AppData and Chrome/Browser junk
+AppData/
+**/Local/Google/Chrome/
 
-# Logs and Transcripts
+# Ignore PowerShell / VS Code clutter
+.vscode/
 *.log
-App-Install-Summary-*.txt
-App-Install-Transcript-*.txt
-SystemInventory_*.txt
-
-# OS files
-desktop.ini
-
-# Tool configs
-.claude/
-.gemini/
-
+*.tmp

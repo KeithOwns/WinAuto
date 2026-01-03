@@ -1,0 +1,187 @@
+#Requires -RunAsAdministrator
+<#
+.SYNOPSIS
+    WinAuto PowerShell Script Writing Rules and Visual Examples
+
+.DESCRIPTION
+    This script displays visual examples of WinAuto scripting standards by default.
+    Use the -ShowRules parameter to view the complete text-based rule documentation.
+
+.PARAMETER ShowRules
+    Display the complete text-based rules documentation instead of visual examples.
+
+.EXAMPLE
+    .\scriptRULES-WinAuto.ps1
+    Shows visual examples of formatting standards (default behavior)
+
+.NOTES
+    Author: WinAuto Team
+    Version: 9.9 (Mockup Final Alignment)
+    Repository: https://github.com/KeithOwns/WinAuto
+#>
+
+param(
+    [switch]$ShowRules
+)
+
+# Set console output encoding to UTF-8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+# --- Define Unicode Characters ---
+$Char_HeavyCheck  = [char]0x2705 # ✅
+$Char_Check       = [char]0x2714 # ✔
+$Char_Warn        = [char]0x26A0 # ⚠
+$Char_Keyboard    = [char]0x2328 # ⌨
+$Char_Loop        = [char]::ConvertFromUtf32(0x1F504) # 🔄
+$Char_Copyright   = [char]0x00A9 # ©
+$Char_EmDash      = [char]0x2014 # —
+$Char_RedCross    = [char]0x274E # ❎
+$Char_Cross       = [char]0x2716 # ✖
+$Char_Finger      = [char]0x261B # ☛
+$Char_HeavyMinus  = [char]0x25AC # ▬
+$Char_HeavyLine   = [char]0x2501 # ━
+$Char_LightLine   = [char]0x2500 # ─
+$Char_Overline    = [char]0x203E # ‾
+$Char_Skip        = [char]0x23ED # ⏭
+$Char_Underscore  = [char]0x005F # _
+
+# --- ANSI Colors ---
+$Esc = [char]0x1B
+$Reset = "$Esc[0m"
+$Bold = "$Esc[1m"
+$FGCyan       = "$Esc[96m"
+$FGDarkBlue   = "$Esc[34m"
+$FGGreen      = "$Esc[92m"
+$FGRed        = "$Esc[91m"
+$FGMagenta    = "$Esc[95m"
+$FGYellow     = "$Esc[93m"
+$FGWhite      = "$Esc[97m"
+$FGGray       = "$Esc[37m"
+$FGDarkGray   = "$Esc[90m"
+$FGDarkGreen  = "$Esc[32m"
+$FGDarkRed    = "$Esc[31m"
+
+# Precision Column Printing
+function Write-Row {
+    param($ColorName, $ANSI, $About, $Where, [string]$DefaultString, $ColorCode) 
+    
+    # Target Widths based on Mockup:
+    # Color (10) | ANSI (6) | About (8) | Where (8) | Default (rest)
+    
+    $c1 = $ColorName.PadLeft(14)
+    $c2 = $ANSI.PadRight(7)
+    $c3 = $About.PadRight(8)
+    $c4 = $Where.PadRight(8)
+    
+    Write-Host " ${ColorCode}${c1}${Reset} ${c2} ${c3} ${c4} ${ColorCode}${DefaultString}${Reset}"
+}
+
+function Show-VisualExamples {
+    param([bool]$ShowFormattingRules = $false)
+
+    Clear-Host
+    Write-Output ""
+
+    # Centered Header
+    $WinAutoTitle = "▬WinAuto▬"
+    Write-Output (" " * 25 + "$Bold$FGCyan$WinAutoTitle$Reset")
+    Write-Output (" " * 20 + "$Bold$FGCyan" + "SCRIPT OUTPUT RULES" + "$Reset")
+    Write-Output ""
+
+    # Legend Section
+    Write-Output "$FGDarkBlue$([string]$Char_Underscore * 60)$Reset"
+    Write-Output (" " * 18 + "${FGCyan}$Char_HeavyLine" + "Script Output LEGEND" + "$Char_HeavyLine$Reset")
+    Write-Output ""
+    # Header logic
+    Write-Output "	 Color ANSI	About	Where	Default_String"
+    Write-Output "$FGDarkGray$([string]$Char_Overline * 60)$Reset"
+
+    Write-Row "Cyan" "\e[96m" "Script" "Hdr/Ftr" " ▬WinAuto▬" $FGCyan
+    Write-Row "DarkBlue" "\e[34m" "Script" "Lines" "──────────" $FGDarkBlue
+    Write-Row "Green" "\e[92m" "Script" "Output" " ✔ Success!" $FGGreen
+    Write-Row "Red" "\e[91m" "Script" "Output" " ✖ Failure!" $FGRed
+    Write-Row "Yellow" "\e[93m" "Script" "Input" "  ☛ [Key]" $FGYellow
+    Write-Row "White" "\e[97m" "▬BOLD▬" "Body" "	▬" $FGWhite
+    Write-Row "Gray" "\e[37m" "regular" "Body" "	━" $FGGray
+    Write-Row "DarkGray" "\e[90m" "System" "Lines" "──────────" $FGDarkGray
+    Write-Row "DarkGreen" "\e[32m" "System" "Output" " ✅ ENABLED" $FGDarkGreen
+    Write-Row "DarkRed" "\e[31m" "System" "Output" " ❎ DISABLED" $FGDarkRed
+    Write-Row "Magenta" "\e[95m" "System" "Output" " ⚠  WARNING" $FGMagenta
+
+    Write-Output ""
+    Write-Output "$FGDarkBlue$([string]$Char_Underscore * 60)$Reset"
+    Write-Output ""
+    
+    if ($ShowFormattingRules) {
+        Write-Output (" " * 16 + "${FGCyan}$Char_HeavyLine" + "Script Output FORMATTING" + "$Char_HeavyLine$Reset")
+        Write-Output ""
+        Write-Output "  ${FGWhite}A. Text Formatting:$Reset"
+        Write-Output "     ${FGGray}1. Never split whole words over multiple lines.$Reset"
+        Write-Output "     ${FGGray}2. Default alignment: Center-align$Reset"
+        Write-Output "     ${FGGray}3. Body Alignment: Left-align; 2 space indentation$Reset"
+        Write-Output "     ${FGGray}4. Boundaries composed of (`"$Char_EmDash`" * 60)$Reset"
+        Write-Output "     ${FGGray}5. Optimize output for window 60 characters in length$Reset"
+        Write-Output "     ${FGGray}6. Structured Status Display (Write-FlexLine):$Reset"
+        Write-Output "         Highlight positive status states (Active/On) using$Reset"
+        Write-Output "         a background color (e.g., `$BGDarkGreen).$Reset"
+        Write-Output "     ${FGGray}7. Always use `$FGGray for informational text that is $Reset"
+        Write-Output "         not a status or title.$Reset"
+        Write-Output "     ${FGGray}8. Interactive Prompts:$Reset"
+        Write-Output "         Must include a timeout (default 10s) and a safe$Reset"
+        Write-Output "         default action to enable unattended execution.$Reset"
+        Write-Output ""
+        Write-Output ""
+        Write-Output ""
+        Write-Output ""
+        Write-Output "$FGDarkBlue$([string]$Char_Underscore * 60)$Reset"
+    }
+}
+
+function Wait-KeyPressWithTimeout {
+    param([int]$Seconds, [scriptblock]$OnTick)
+    $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($StopWatch.Elapsed.TotalSeconds -lt $Seconds) {
+        if ($OnTick) { & $OnTick $StopWatch.Elapsed }
+        if ([Console]::KeyAvailable) {
+            $StopWatch.Stop()
+            return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    $StopWatch.Stop()
+    return [PSCustomObject]@{ VirtualKeyCode = 13 }
+}
+
+if ($ShowRules) {
+    Show-VisualExamples -ShowFormattingRules $true
+    Write-Output ("       $Char_Copyright 2026, www.AIIT.support. All Rights Reserved.")
+} else {
+    Show-VisualExamples -ShowFormattingRules $false
+    $PromptCursorTop = [Console]::CursorTop
+    Write-Output ""
+    Write-Output ("       $Char_Copyright 2026, www.AIIT.support. All Rights Reserved.")
+    
+    $TickAction = {
+        param($ElapsedTimespan)
+        $WiggleFrame = [Math]::Floor($ElapsedTimespan.TotalMilliseconds / 500)
+        $IsRight = ($WiggleFrame % 2) -eq 1
+        $CurrentChars = if ($IsRight) { @(" ", $Char_Finger, "[", "E", "n", "t", "e", "r", "]", " ") } else { @($Char_Finger, " ", "[", "E", "n", "t", "e", "r", "]", " ") }
+        $DynamicPart = ""
+        $Filled = [Math]::Min(10, [Math]::Floor($ElapsedTimespan.TotalSeconds))
+        for ($i=0; $i -lt 10; $i++) {
+            $c = $CurrentChars[$i]
+            if ($i -lt $Filled) { $DynamicPart += "$Esc[103m$Esc[30m$c$Reset" }
+            else { if ($c -eq " ") { $DynamicPart += " " } else { $DynamicPart += "$Esc[93m$c$Reset" } }
+        }
+        $p = "${FGWhite}$Char_Keyboard  Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}EXPAND${FGDarkGray} ${FGWhite}|${FGDarkGray} or any other key ${FGWhite}to SKIP$Char_Skip${Reset}"
+        try { [Console]::SetCursorPosition(0, $PromptCursorTop); Write-Host (" " * 2 + $p) -NoNewline } catch {}
+    }
+
+    $key = Wait-KeyPressWithTimeout -Seconds 10 -OnTick $TickAction
+    if ($key.VirtualKeyCode -eq 13) { 
+        Show-VisualExamples -ShowFormattingRules $true
+        Write-Output ("       $Char_Copyright 2026, www.AIIT.support. All Rights Reserved.")
+    }
+}
+
+1..5 | ForEach-Object { Write-Output "" }

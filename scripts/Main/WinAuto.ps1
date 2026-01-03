@@ -32,7 +32,7 @@ while ($true) {
     Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
     Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
     Write-Host ""
-    Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Run ALL${FGGray} Modules${Reset}"
+    Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Smart Run${FGGray} (Recommended)${Reset}"
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
 
@@ -41,14 +41,16 @@ while ($true) {
     $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 10
 
     if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'A' -or $res.Character -eq 'a') {
-        # Run ALL
-        & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1"
-        & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1"
+        # Smart Run
+        & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -SmartRun
+        & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -SmartRun
         break
     } elseif ($res.Character -eq '1') {
+        # Force Run
         & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1"
         break
     } elseif ($res.Character -eq '2') {
+        # Force Run
         & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1"
         break
     } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {

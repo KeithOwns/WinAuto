@@ -1,0 +1,70 @@
+function Get-ThirdPartyAV {
+    <#
+    .SYNOPSIS
+        Detects if a third-party Antivirus (non-Microsoft) is installed and active.
+    .DESCRIPTION
+        Queries the WMI SecurityCenter2 namespace to identify installed antivirus products.
+        It filters out Windows Defender/Microsoft Defender to return only third-party solutions.
+    .RETURN VALUE
+        [string] Name of the third-party AV, or $null if none found.
+    #>
+    try {
+        # Query SecurityCenter2 for antivirus products
+        $avStatus = Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct -ErrorAction Stop
+        
+        # Filter out Windows/Microsoft Defender to find 3rd party tools
+        $thirdPartyAV = $avStatus | Where-Object { 
+            $_.displayName -notlike "*Windows Defender*" -and 
+            $_.displayName -notlike "*Microsoft Defender*" 
+        }
+
+        if ($thirdPartyAV) {
+            return $thirdPartyAV.displayName
+        }
+        return $null
+    }
+    catch {
+        # Fallback or error logging (silent to prevent script breaking)
+        Write-Verbose "Could not query SecurityCenter2: $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Test-TamperProtection {
+    <#
+    .SYNOPSIS
+        Checks the status of Windows Defender Tamper Protection.
+    .DESCRIPTION
+        Tamper Protection prevents malicious modification of security settings.
+        This function checks the status via the MPComputerStatus cmdlet or Registry.
+    .RETURN VALUE
+        [bool] $true if Enabled, $false if Disabled.
+    #>
+    try {
+        # Method 1: Modern Windows (Preferred)
+        # Check using the official Defender cmdlet
+        if (Get-Command "Get-MpComputerStatus" -ErrorAction SilentlyContinue) {
+            $mpStatus = Get-MpComputerStatus -ErrorAction SilentlyContinue
+            if ($mpStatus) {
+                return [bool]$mpStatus.IsTamperProtected
+            }
+        }
+
+        # Method 2: Registry Fallback
+        # 5 = Enabled, 0/4 = Disabled (approximate values for this key)
+        $regPath = "HKLM:\SOFTWARE\Microsoft\Windows Defender\Features"
+        $regName = "TamperProtection"
+        
+        $tpValue = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue
+        
+        if ($tpValue) {
+            return [bool]($tpValue.$regName -eq 5)
+        }
+
+        return $false
+    }
+    catch {
+        Write-Verbose "Could not determine Tamper Protection status: $($_.Exception.Message)"
+        return $false
+    }
+}
