@@ -37,43 +37,62 @@ function Set-ConsoleSnapRight {
         $code = @"
         using System;
         using System.Runtime.InteropServices;
-        public class Win32Window {
-            [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
-            [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
-            [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
-            [DllImport("user32.dll")] public static extern int GetSystemMetrics(int nIndex);
-            [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+        namespace WinAutoNative {
+            [StructLayout(LayoutKind.Sequential)] 
+            public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
+
+            public class ConsoleUtils {
+                [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
+                [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+                [DllImport("user32.dll")] public static extern int GetSystemMetrics(int nIndex);
+                [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+            }
         }
 "@
-        if (-not ([System.Management.Automation.PSTypeName]"Win32Window").Type) {
+        if (-not ([System.Management.Automation.PSTypeName]"WinAutoNative.ConsoleUtils").Type) {
             Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue
         }
 
-        # Adjust Buffer and Window Size (Character based)
+        # Safe Resizing Logic
         $buffer = $Host.UI.RawUI.BufferSize
         $window = $Host.UI.RawUI.WindowSize
-        
-        $targetHeight = [Math]::Max($window.Height, 40)
-        
-        $buffer.Width = $Columns
-        if ($buffer.Height -lt $targetHeight) { $buffer.Height = $targetHeight }
-        $Host.UI.RawUI.BufferSize = $buffer
-        
-        $window.Width = $Columns
+        $targetHeight = [Math]::Max($window.Height, 50) # Ensure decent height
+
+        # 1. Width Adjustment
+        if ($Columns -lt $window.Width) {
+            # Shrinking: Window FIRST, then Buffer
+            $window.Width = $Columns
+            $Host.UI.RawUI.WindowSize = $window
+            $buffer.Width = $Columns
+            $Host.UI.RawUI.BufferSize = $buffer
+        } elseif ($Columns -gt $window.Width) {
+            # Growing: Buffer FIRST, then Window
+            $buffer.Width = $Columns
+            $Host.UI.RawUI.BufferSize = $buffer
+            $window.Width = $Columns
+            $Host.UI.RawUI.WindowSize = $window
+        }
+
+        # 2. Height Adjustment
+        if ($buffer.Height -lt $targetHeight) {
+            $buffer.Height = $targetHeight
+            $Host.UI.RawUI.BufferSize = $buffer
+        }
         $window.Height = $targetHeight
         $Host.UI.RawUI.WindowSize = $window
 
-        # Adjust Position (Pixel based)
-        $hWnd = [Win32Window]::GetConsoleWindow()
-        $screenW = [Win32Window]::GetSystemMetrics(16) # SM_CXVIRTUALSCREEN
-        $screenH = [Win32Window]::GetSystemMetrics(17) # SM_CYVIRTUALSCREEN
+        # 3. Position Adjustment
+        $hWnd = [WinAutoNative.ConsoleUtils]::GetConsoleWindow()
+        $screenW = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(16) # SM_CXFULLSCREEN
+        $screenH = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(17) # SM_CYFULLSCREEN
         
-        $rect = New-Object Win32Window.RECT
-        [Win32Window]::GetWindowRect($hWnd, [ref]$rect)
+        $rect = New-Object WinAutoNative.RECT
+        [WinAutoNative.ConsoleUtils]::GetWindowRect($hWnd, [ref]$rect)
         $winW = $rect.Right - $rect.Left
-        $winH = $rect.Bottom - $rect.Top
         
-        [Win32Window]::MoveWindow($hWnd, ($screenW - $winW), 0, $winW, $screenH, $true) | Out-Null
+        # Snap to Right Edge
+        [WinAutoNative.ConsoleUtils]::MoveWindow($hWnd, ($screenW - $winW), 0, $winW, $screenH, $true) | Out-Null
+
     } catch {
         Write-Log "Failed to snap window: $($_.Exception.Message)" -Level WARNING
     }

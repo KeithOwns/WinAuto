@@ -6,6 +6,8 @@
     Fully automated core configuration. Non-blocking.
 #>
 
+param([switch]$SmartRun)
+
 # --- SHARED FUNCTIONS ---
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
 $Global:WinAutoCompactMode = $true
@@ -13,27 +15,23 @@ $Global:WinAutoCompactMode = $true
 # --- LOGGING ---
 try { Start-Transcript -Path $Global:WinAutoLogPath -Append -ErrorAction SilentlyContinue | Out-Null } catch {}
 
-# --- DETECTION HELPERS ---
-
-function Get-ThirdPartyAV {
-    try {
-        $av = Get-CimInstance -Namespace "root\SecurityCenter2" -ClassName "AntiVirusProduct" -ErrorAction SilentlyContinue
-        foreach ($a in $av) { if ($a.displayName -notmatch "Defender|Windows Security") { return $a.displayName } }
-    } catch {}
-    return $null
-}
-
-function Test-TamperProtection {
-    try {
-        $tp = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Features" -Name "TamperProtection" -ErrorAction SilentlyContinue).TamperProtection
-        return ($tp -eq 5 -or $tp -eq 1) # 5 = Enabled/Managed
-    } catch { return $false }
-}
-
 # --- MAIN EXECUTION ---
 Write-Header "WINDOWS CONFIGURATION PHASE"
 $lastRun = Get-WinAutoLastRun -Module "Configuration"
 Write-LeftAligned "$FGGray Last Run: $FGWhite$lastRun$Reset"
+
+if ($SmartRun -and $lastRun -ne "Never") {
+    $lastDate = Get-Date $lastRun
+    if ((Get-Date) -lt $lastDate.AddDays(30)) {
+        Write-Host ""
+        Write-LeftAligned "$FGGreen$Char_CheckMark Configuration is up to date (Run < 30 days ago). Skipping...$Reset"
+        Write-Boundary
+        Write-Footer
+        try { if ($null -ne (Get-Variable -Name "Transcript" -ErrorAction SilentlyContinue)) { Stop-Transcript | Out-Null } } catch {}
+        exit
+    }
+}
+
 Write-Boundary
 
 # Pre-checks

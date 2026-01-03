@@ -12,7 +12,7 @@
 $Global:WinAutoCompactMode = $true
 $Global:WinAutoManualActions = @()
 
-# Console setup: Snap to right and disable QuickEdit
+# Disable Console QuickEdit to prevent hanging
 Set-ConsoleSnapRight -Columns 64
 Disable-QuickEdit
 

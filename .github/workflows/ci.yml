@@ -14,22 +14,36 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Run Script Quality Checker
+    - name: Set up PowerShell 5.1
+      uses: actions/setup-powershell@v3
+      with:
+        powershell-version: '5.1' # Ensure we test on the required base version
+
+    - name: Install Pester if not available
       shell: powershell
       run: |
-        # Call the quality checker script
-        # We explicitly set the path to verify all Library scripts
+        # Pester is usually included in PS 5.1+, but this ensures it's present
+        if (-not (Get-Module -ListAvailable -Name Pester)) {
+          Write-Host "Pester not found. Installing latest stable version..."
+          Install-Module Pester -Force -SkipPublisherCheck -Scope CurrentUser
+        } else {
+          Write-Host "Pester already installed."
+        }
+        
+    - name: Run Pester Tests
+      shell: powershell
+      run: |
+        # Run the Pester tests from the tests/ directory
         $ErrorActionPreference = "Stop"
         
-        Write-Host "Starting WinAuto Quality Audit..."
+        Write-Host "Starting WinAuto Pester Audit..."
         
         try {
-            & ".\scripts\Library\CHECK_ScriptQuality-WinAuto.ps1" -ScriptPath ".\scripts\Library"
-            
-            # Check for failure indicator in output logs isn't enough, we need to inspect exit code logic in the script.
-            # However, the script currently exits with 1 only if no scripts found or specific error.
-            # Let's inspect the results.
+            # Invoke-Pester requires a specific path or it searches
+            Invoke-Pester -Path ".\tests\*.Tests.ps1" -EnableExitCode 1
         } catch {
-            Write-Error "Quality Check Failed: $_"
+            Write-Error "Pester execution failed: $_"
             exit 1
         }
+        Write-Host "Pester Audit completed."
+
