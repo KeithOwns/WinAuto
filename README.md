@@ -6,6 +6,16 @@
 ![Language](https://img.shields.io/badge/Language-PowerShell%205.1%2B-5391FE?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
+## ⚡ Quick Install
+
+Run this command in PowerShell (Admin) to download, install, and launch WinAuto automatically:
+
+```powershell
+iex (irm https://raw.githubusercontent.com/KeithOwns/WinAuto/master/setup.ps1)
+```
+
+*(This downloads `setup.ps1`, checks dependencies, clones the repo to your Documents folder, and creates a Desktop shortcut.)*
+
 ## 📖 Project Overview
 
 **WinAuto** is a comprehensive automation suite designed to demonstrate advanced Windows administration and scripting capabilities. Unlike simple "debloat" scripts, WinAuto is engineered as a **framework** with a focus on reliability, idempotency, and standardized user experience.

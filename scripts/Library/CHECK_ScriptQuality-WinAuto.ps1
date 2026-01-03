@@ -53,7 +53,7 @@ function Write-StepResult {
 Write-Header "SCRIPT QUALITY AUDIT"
 
 Write-LeftAligned "$FGYellow Scanning scripts in: $ScriptPath$Reset"
-$scripts = Get-ChildItem -Path $ScriptPath -Filter "*.ps1" -File | Where-Object { $_.Name -ne "CHECK_ScriptQuality-W11.ps1" }
+$scripts = Get-ChildItem -Path $ScriptPath -Filter "*.ps1" -Recurse -File | Where-Object { $_.Name -ne "CHECK_ScriptQuality-W11.ps1" }
 
 if ($scripts.Count -eq 0) {
     Write-LeftAligned "$FGRed No scripts found to test.$Reset"

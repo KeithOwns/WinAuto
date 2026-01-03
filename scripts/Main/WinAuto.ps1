@@ -12,7 +12,8 @@
 $Global:WinAutoCompactMode = $true
 $Global:WinAutoManualActions = @()
 
-# Disable Console QuickEdit to prevent hanging
+# Console setup: Snap to right and disable QuickEdit
+Set-ConsoleSnapRight -Columns 64
 Disable-QuickEdit
 
 # Ensure log directory exists
