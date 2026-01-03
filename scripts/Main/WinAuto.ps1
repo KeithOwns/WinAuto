@@ -20,31 +20,68 @@ if (-not (Test-Path $Global:WinAutoLogDir)) { New-Item -Path $Global:WinAutoLogD
 Write-Log "WinAuto Session Started" -Level INFO
 
 # --- MAIN EXECUTION ---
-Clear-Host
-Write-Header "WINAUTO: MASTER CONTROL"
+while ($true) {
+    Clear-Host
+    Write-Header "WINAUTO: MASTER CONTROL"
 
-Write-Host ""
-Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Security, Privacy, UI Tweaks)${Reset}"
-Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Updates, Repair, Optimization)${Reset}"
-Write-Host ""
-Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Run ALL${FGGray} Modules${Reset}"
+    $lastConfig = Get-WinAutoLastRun -Module "Configuration"
+    $lastMaint  = Get-WinAutoLastRun -Module "Maintenance"
 
-Write-Boundary
+    Write-Host ""
+    Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
+    Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
+    Write-Host ""
+    Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Run ALL${FGGray} Modules${Reset}"
+    Write-Host ""
+    Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
 
-$res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 10
+    Write-Boundary
 
-if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'A' -or $res.Character -eq 'a') {
-    # Run ALL
-    & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1"
-    & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1"
-} elseif ($res.Character -eq '1') {
-    & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1"
-} elseif ($res.Character -eq '2') {
-    & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1"
-} else {
-    Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
-    Start-Sleep -Seconds 1
-    exit
+    $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 10
+
+    if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'A' -or $res.Character -eq 'a') {
+        # Run ALL
+        & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1"
+        & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1"
+        break
+    } elseif ($res.Character -eq '1') {
+        & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1"
+        break
+    } elseif ($res.Character -eq '2') {
+        & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1"
+        break
+    } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {
+        Clear-Host
+        Write-Header "SYSTEM IMPACT MANIFEST"
+        Write-Host ""
+        
+        # Check for Manifest file
+        $manifestPath = "$PSScriptRoot\..\..\MANIFEST.md"
+        if (Test-Path $manifestPath) {
+            $content = Get-Content $manifestPath
+            # Simple pager
+            if ($content.Count -gt 30) {
+                 $content | Select-Object -First 30 | ForEach-Object { Write-LeftAligned $_ }
+                 Write-Host ""
+                 Write-Centered "$FGCyan... (Press any key to read more) ...$Reset"
+                 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+                 $content | Select-Object -Skip 30 | ForEach-Object { Write-LeftAligned $_ }
+            } else {
+                $content | ForEach-Object { Write-LeftAligned $_ }
+            }
+        } else {
+            Write-LeftAligned "$FGRed$Char_Warn Manifest file not found.$Reset"
+        }
+        
+        Write-Host ""
+        Write-Boundary
+        Write-Centered "Press any key to return to menu..."
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    } else {
+        Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
+        Start-Sleep -Seconds 1
+        exit
+    }
 }
 
 # --- FINAL SUMMARY (Manual Actions collected from modules) ---

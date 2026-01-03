@@ -32,6 +32,9 @@ function Test-TamperProtection {
 
 # --- MAIN EXECUTION ---
 Write-Header "WINDOWS CONFIGURATION PHASE"
+$lastRun = Get-WinAutoLastRun -Module "Configuration"
+Write-LeftAligned "$FGGray Last Run: $FGWhite$lastRun$Reset"
+Write-Boundary
 
 # Pre-checks
 $av = Get-ThirdPartyAV
@@ -88,6 +91,7 @@ foreach ($s in $secScripts) {
 Write-Boundary
 
 Write-Centered "$FGGreen CONFIGURATION COMPLETE $Reset"
+Set-WinAutoLastRun -Module "Configuration"
 
 Write-Footer
 

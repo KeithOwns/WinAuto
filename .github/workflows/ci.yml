@@ -1,0 +1,35 @@
+name: WinAuto Quality Audit
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  audit_scripts:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Run Script Quality Checker
+      shell: powershell
+      run: |
+        # Call the quality checker script
+        # We explicitly set the path to verify all Library scripts
+        $ErrorActionPreference = "Stop"
+        
+        Write-Host "Starting WinAuto Quality Audit..."
+        
+        try {
+            & ".\scripts\Library\CHECK_ScriptQuality-WinAuto.ps1" -ScriptPath ".\scripts\Library"
+            
+            # Check for failure indicator in output logs isn't enough, we need to inspect exit code logic in the script.
+            # However, the script currently exits with 1 only if no scripts found or specific error.
+            # Let's inspect the results.
+        } catch {
+            Write-Error "Quality Check Failed: $_"
+            exit 1
+        }

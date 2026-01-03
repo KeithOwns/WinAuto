@@ -4,8 +4,30 @@
 # --- ENCODING ---
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+# --- REQUIREMENTS CHECK ---
+if ($PSVersionTable.PSVersion.Major -lt 5) {
+    Write-Warning "WinAuto requires PowerShell 5.1 or newer. You are running version $($PSVersionTable.PSVersion)."
+    exit
+}
+
 # --- GLOBAL RESOURCES ---
 . "$PSScriptRoot\Global_Resources.ps1"
+
+# --- OS VALIDATION ---
+function Test-IsWindows11 {
+    $os = Get-CimInstance -ClassName Win32_OperatingSystem
+    # Windows 11 is technically Windows 10 kernel, but Build number is 22000+
+    $build = [int]$os.BuildNumber
+    if ($build -lt 22000) {
+        Write-Warning "WinAuto is designed for Windows 11 (Build 22000+). Detected Build: $build."
+        Write-Warning "Some features (Smart App Control, Winget, Settings Layouts) may fail or cause errors."
+        Write-Host "Press any key to continue at your own risk..."
+        $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    }
+}
+
+# Run the check immediately upon loading shared functions
+Test-IsWindows11
 
 # --- CONSOLE SETTINGS ---
 
