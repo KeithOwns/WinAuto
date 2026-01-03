@@ -1,15 +1,18 @@
-﻿# WinAuto: The Windows Automation Project
+# 🪟 WinAuto 🔄 The Windows Automation Project
 
 A standardized, modular PowerShell suite for Windows 11 automation, security hardening, and system maintenance.
 
-## Project Goal
-To provide a professional, unified, and easy-to-use framework for managing Windows 11 environments via automated PowerShell scripts.
+## Usage
+1. Right-click **scripts\Main\WinAuto.ps1** and select 'Run with PowerShell'.
+2. Choose your module:
+   * **[1] CONFIGURATOR**: Security hardening, Privacy, and UI Tweaks.
+   * **[2] MAINTENANCE**: Updates, Repairs, and System Optimization.
+   * **[A] ALL**: Runs the full suite sequentially.
 
-## Key Features
-- **Centralized UI:** Standardized colors, icons, and formatting.
-- **Unattended Ready:** All interactive prompts feature automated 10-second timeouts.
-- **Modular Design:** Independent scripts for specific tasks.
-- **Undo Support:** Configuration settings can be easily reverted.
+## Features
+*   **Standardized UI**: Consistent headers, footers, and status indicators (`✅`, `⚠`, `❎`).
+*   **Shared Library**: Centralized logic via `Shared_UI_Functions.ps1` for easy maintenance.
+*   **Safe Execution**: Interactive timeouts and confirmation prompts for critical actions.
 
 ---
-© 2025 AI+IT Support. All Rights Reserved.
+© 2026 AI+IT Support. All Rights Reserved.

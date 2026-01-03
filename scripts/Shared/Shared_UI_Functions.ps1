@@ -1,0 +1,272 @@
+﻿# WinAuto Shared UI & Logic Functions
+# Standardizes visuals, colors, and interactive timeouts across the suite.
+
+# --- ENCODING ---
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+# --- GLOBAL RESOURCES ---
+. "$PSScriptRoot\Global_Resources.ps1"
+
+# --- FORMATTING HELPERS ---
+
+function Get-VisualWidth {
+    param([string]$String)
+    $Width = 0
+    $Chars = $String.ToCharArray()
+    for ($i = 0; $i -lt $Chars.Count; $i++) {
+        $c = $Chars[$i]
+        # Check for High Surrogate (D800-DBFF) -> Emoji/Wide pair
+        if ([char]::IsHighSurrogate($c)) {
+            $Width += 2
+            $i++ # Skip low surrogate
+        }
+        # Check for wide BMP characters (like some symbols) if needed
+        # For now, assume BMP = 1 unless specifically handled
+        else {
+            $Width += 1
+        }
+    }
+    return $Width
+}
+
+function Format-PaddedColumns {
+    param(
+        [Parameter(Mandatory)] [System.Collections.ArrayList] $Items,
+        [int] $Columns = 4,
+        [int] $Padding = 2 # Min spaces between cols
+    )
+    
+    # Calculate max width per column to optimize spacing
+    # Or simplified: Fixed width per column
+    # Let's try dynamic:
+    
+    $ColWidths = New-Object int[] $Columns
+    for ($i = 0; $i -lt $Items.Count; $i++) {
+        $ColIndex = $i % $Columns
+        $VisWidth = Get-VisualWidth $Items[$i]
+        if ($VisWidth -gt $ColWidths[$ColIndex]) {
+            $ColWidths[$ColIndex] = $VisWidth
+        }
+    }
+
+    $Rows = [Math]::Ceiling($Items.Count / $Columns)
+    for ($r = 0; $r -lt $Rows; $r++) {
+        $RowString = ""
+        for ($c = 0; $c -lt $Columns; $c++) {
+            $Index = ($r * $Columns) + $c
+            if ($Index -lt $Items.Count) {
+                $Item = $Items[$Index]
+                $VisWidth = Get-VisualWidth $Item
+                
+                # Calculate needed spaces
+                if ($c -lt $Columns - 1) {
+                    $Spaces = ($ColWidths[$c] - $VisWidth) + $Padding
+                    $RowString += $Item + (" " * $Spaces)
+                } else {
+                    $RowString += $Item # Last column needs no extra padding
+                }
+            }
+        }
+        Write-LeftAligned $RowString
+    }
+}
+
+function Write-Centered {
+    param([string]$Text, [int]$Width = 60)
+    $cleanText = $Text -replace "$Esc\[[0-9;]*m", ""
+    $padLeft = [Math]::Floor(($Width - $cleanText.Length) / 2)
+    if ($padLeft -lt 0) { $padLeft = 0 }
+    Write-Host (" " * $padLeft + $Text)
+}
+
+function Write-LeftAligned {
+    param([string]$Text, [int]$Indent = 2)
+    Write-Host (" " * $Indent + $Text)
+}
+
+function Write-Boundary {
+    param([string]$Color = $FGDarkBlue)
+    Write-Host "$Color$([string]'_' * 60)$Reset"
+}
+
+function Write-Header {
+    param([string]$Title)
+    Clear-Host
+    Write-Host ""
+    
+    # Top Title
+    $WinAutoTitle = "$([char]::ConvertFromUtf32(0x1FA9F)) WinAuto $Char_Loop"
+    $WinAutoPadding = [Math]::Floor((60 - 11) / 2)
+    Write-Host (" " * $WinAutoPadding + "$Bold$FGCyan$WinAutoTitle$Reset")
+    
+    # Sub-Header
+    $SubText = $Title.ToUpper()
+    $SubPadding = [Math]::Floor((60 - $SubText.Length) / 2)
+    Write-Host (" " * $SubPadding + "$Bold$FGCyan$SubText$Reset")
+    
+    # Separator
+    Write-Boundary
+}
+
+function Write-Footer {
+    Write-Boundary
+    $FooterText = "$Char_Copyright 2026, www.AIIT.support. All Rights Reserved."
+    $FooterPadding = [Math]::Floor((60 - $FooterText.Length) / 2)
+    Write-Host (" " * $FooterPadding + $FooterText) -ForegroundColor Cyan
+}
+
+function Write-FlexLine {
+    param(
+        [string]$LeftIcon,
+        [string]$LeftText,
+        [string]$RightText,
+        [bool]$IsActive,
+        [int]$Width = 60,
+        [string]$ActiveColor = "$BGDarkGreen"
+    )
+    # Define Char_BlackCircle locally if not global, or rely on it being present.
+    # It wasn't in my previous update list. I should add it to ICONS section or here.
+    # scriptRULES uses Char_BlackRect = 0x25AC (â–¬). C1 used Char_BlackCircle.
+    # I will assume Char_BlackCircle should be Char_BlackRect (â–¬) to match rules?
+    # Or I should add Char_BlackCircle. Let's add it to icons below this block if missing.
+    $Circle = [char]0x25CF # â— Black Circle
+    
+    if ($IsActive) {
+        $LeftDisplay = "$FGGray$LeftIcon $FGGray$LeftText$Reset"
+    } else {
+        $LeftDisplay = "$FGDarkGray$LeftIcon $FGDarkGray$LeftText$Reset"
+    }
+
+    $LeftRaw = "$LeftIcon $LeftText"
+    
+    if ($IsActive) {
+        $RightDisplay = "$ActiveColor  $Circle$Reset$FGGray$RightText$Reset  "
+        $RightRaw = "  $Circle$RightText  " 
+    } else {
+        $RightDisplay = "$BGDarkGray$FGBlack$Circle  $Reset${FGDarkGray}Off$Reset "
+        $RightRaw = "$Circle  Off "
+    }
+
+    $SpaceCount = $Width - ($LeftRaw.Length + $RightRaw.Length + 3) - 1
+    if ($SpaceCount -lt 1) { $SpaceCount = 1 }
+    
+    Write-Host ("   " + $LeftDisplay + (" " * $SpaceCount) + $RightDisplay)
+}
+
+function Write-BodyTitle {
+    param([string]$Title)
+    Write-LeftAligned "$FGWhite$Char_HeavyMinus $Bold$Title$Reset"
+}
+
+function Get-StatusLine {
+    param([bool]$IsEnabled, [string]$Text)
+    if ($IsEnabled) { return "$FGDarkGreen$Char_BallotCheck  $FGGray$Text$Reset" } 
+    else { return "$FGDarkRed$Char_RedCross $FGGray$Text$Reset" }
+}
+
+# --- REGISTRY & LOGGING HELPERS ---
+
+function Write-Log {
+    param(
+        [Parameter(Mandatory)][string]$Message,
+        [ValidateSet('INFO','WARNING','ERROR','SUCCESS')][string]$Level = 'INFO',
+        [string]$Path = $Global:WinAutoLogPath
+    )
+    if (-not $Path) { $Path = "C:\Windows\Temp\WinAuto.log" }
+    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    
+    # Ensure directory exists
+    $logDir = Split-Path -Path $Path -Parent
+    if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
+
+    $logEntry = "[$timestamp] [$Level] $Message"
+    Add-Content -Path $Path -Value $logEntry -ErrorAction SilentlyContinue
+
+    # Secondary Error Log (if configured and level is relevant)
+    if ($Global:WinAutoErrorLogPath -and ($Level -eq 'ERROR' -or $Level -eq 'WARNING')) {
+        Add-Content -Path $Global:WinAutoErrorLogPath -Value $logEntry -ErrorAction SilentlyContinue
+    }
+}
+
+function Get-RegistryValue {
+    param([Parameter(Mandatory)] [string]$Path, [Parameter(Mandatory)] [string]$Name)
+    try {
+        if (Test-Path $Path) {
+            $prop = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
+            return $prop.$Name
+        }
+        return $null
+    } catch { return $null }
+}
+
+function Set-RegistryDword {
+    param([Parameter(Mandatory)] [string]$Path, [Parameter(Mandatory)] [string]$Name, [Parameter(Mandatory)] [int]$Value, [string]$LogPath)
+    try {
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
+        New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
+        if ($LogPath) { Write-Log -Message "Set registry: $Path\$Name = $Value" -Level SUCCESS -Path $LogPath }
+    } catch {
+        if ($LogPath) { Write-Log -Message "Failed to set registry: $Path\$Name - $($_.Exception.Message)" -Level ERROR -Path $LogPath }
+        throw $_ 
+    }
+}
+
+function Set-RegistryString {
+    param([Parameter(Mandatory)] [string]$Path, [Parameter(Mandatory)] [string]$Name, [Parameter(Mandatory)] [string]$Value, [string]$LogPath)
+    try {
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
+        New-ItemProperty -Path $Path -Name $Name -PropertyType String -Value $Value -Force | Out-Null
+        if ($LogPath) { Write-Log -Message "Set registry string: $Path\$Name = $Value" -Level SUCCESS -Path $LogPath }
+    } catch {
+        if ($LogPath) { Write-Log -Message "Failed to set registry: $Path\$Name - $($_.Exception.Message)" -Level ERROR -Path $LogPath }
+        throw $_
+    }
+}
+
+# --- TIMEOUT LOGIC ---
+
+function Wait-KeyPressWithTimeout {
+    param(
+        [int]$Seconds = 10,
+        [scriptblock]$OnTick
+    )
+    $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($StopWatch.Elapsed.TotalSeconds -lt $Seconds) {
+        if ($OnTick) { & $OnTick $StopWatch.Elapsed }
+        if ([Console]::KeyAvailable) {
+            $StopWatch.Stop()
+            return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    $StopWatch.Stop()
+    return [PSCustomObject]@{ VirtualKeyCode = 13 } # Default to Enter
+}
+
+function Invoke-AnimatedPause {
+    param([string]$ActionText = "CONTINUE", [int]$Timeout = 10)
+    Write-Host ""
+    $PromptCursorTop = [Console]::CursorTop
+    $TickAction = {
+        param($ElapsedTimespan)
+        $WiggleFrame = [Math]::Floor($ElapsedTimespan.TotalMilliseconds / 500)
+        $IsRight = ($WiggleFrame % 2) -eq 1
+        if ($IsRight) { $CurrentChars = @(" ", $Char_Finger, "[", "E", "n", "t", "e", "r", "]", " ") } 
+        else { $CurrentChars = @($Char_Finger, " ", "[", "E", "n", "t", "e", "r", "]", " ") }
+        $FilledCount = [Math]::Floor($ElapsedTimespan.TotalSeconds)
+        if ($FilledCount -gt $Timeout) { $FilledCount = $Timeout }
+        
+        $DynamicPart = ""
+        for ($i = 0; $i -lt 10; $i++) {
+            $Char = $CurrentChars[$i]
+            if ($i -lt $FilledCount) { $DynamicPart += "${BGYellow}${FGBlack}$Char${Reset}" } 
+            else { if ($Char -eq " ") { $DynamicPart += " " } else { $DynamicPart += "${FGYellow}$Char${Reset}" } }
+        }
+        $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}|${FGDarkGray} or any other key ${FGWhite}to SKIP$Char_Skip${Reset}"
+        try { [Console]::SetCursorPosition(0, $PromptCursorTop); Write-Centered $PromptStr } catch {}
+    }
+
+    $res = Wait-KeyPressWithTimeout -Seconds $Timeout -OnTick $TickAction
+    Write-Host ""
+    return $res
+}

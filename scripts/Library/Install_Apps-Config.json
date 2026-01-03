@@ -1,0 +1,29 @@
+{
+  "BaseApps": [
+    { 
+      "AppName": "7-Zip", 
+      "MatchName": "7-Zip*", 
+      "Type": "WINGET", 
+      "CheckMethod": "Registry", 
+      "WingetId": "7zip.7zip", 
+      "InstallOrder": 10 
+    },
+    { 
+      "AppName": "Adobe Creative Cloud", 
+      "MatchName": "*Adobe Creative Cloud*", 
+      "Type": "WINGET", 
+      "CheckMethod": "Registry", 
+      "WingetId": "Adobe.CreativeCloud", 
+      "InstallOrder": 20 
+    },
+    { 
+      "AppName": "PowerShell (Latest)", 
+      "MatchName": "PowerShell*", 
+      "Type": "WINGET", 
+      "CheckMethod": "Registry", 
+      "WingetId": "Microsoft.PowerShell", 
+      "InstallOrder": 30 
+    }
+  ],
+  "LaptopApps": []
+}

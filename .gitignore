@@ -1,0 +1,20 @@
+﻿# WinAuto gitignore
+
+# Junk and Backups
+Archive/
+nppBackup/
+*.bak
+
+# Logs and Transcripts
+*.log
+App-Install-Summary-*.txt
+App-Install-Transcript-*.txt
+SystemInventory_*.txt
+
+# OS files
+desktop.ini
+
+# Tool configs
+.claude/
+.gemini/
+

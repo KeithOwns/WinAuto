@@ -1,0 +1,92 @@
+
+                        🪟 WinAuto 🔄
+                    SCRIPT OUTPUT RULES
+____________________________________________________________
+                  ━ Script Output LEGEND ━
+
+         Color ANSI     About   Where   Default_String
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+         White \e[97m  BOLD     Body            ━
+          Gray \e[37m  normal   Body            -
+          Cyan \e[96m  Script   Hdr/Ftr  🪟 WinAuto 🔄
+         Green \e[92m  Script   Output   ✔ Success!
+           Red \e[91m  Script   Output   ✖ Failure!
+        Yellow \e[93m  Script   Input     ☛ [Key]
+      DarkBlue \e[34m  Script   Lines   ───────────────
+      DarkGray \e[90m  System   Lines   ───────────────
+     DarkGreen \e[32m  System   Output   ✅ ENABLED
+       DarkRed \e[31m  System   Output   ❎ DISABLED
+    DarkYellow \e[33m  System   Output   ⚠  WARNING
+
+____________________________________________________________
+                ━ Script Output FORMATTING ━
+
+  A. Text Formatting:
+     1. Never split whole words over multiple lines.
+     2. Default alignment: Center-align
+     3. Body Alignment: Left-align; 2 space indentation
+     4. Boundaries composed of ("—" * 60)
+     5. Optimize output for window 60 characters in length
+     6. Structured Status Display (Write-FlexLine):
+         Highlight positive status states (Active/On) using
+         a background color (e.g., $BGDarkGreen).
+     7. Always use $FGGray for informational text that is
+         not a status or title.
+     8. Interactive Prompts:
+         Must include a timeout (default 10s) and a safe
+         default action to enable unattended execution.
+
+____________________________________________________________
+                ━ Script Output Lines IN-USE ━
+
+  [ LINE & BLOCK CHARACTERS - 50x Grayscale ]
+  U+005F  ________________________________________________
+  U+203E  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+  U+2500  ────────────────────────────────────────────────
+  U+2550  ════════════════════════════════════════════════
+  U+2580  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  U+2584  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+  U+2588     33      97      37      90      30    30;47
+____________________________________________________________
+             ━ Script Output Characters USED ━
+
+  Characters IN-USE
+  0x1FA9F: 🪟  0x1F504: 🔄  0x2501 : ━    0x2500 : ─
+  0x2796 : ➖  0x2713 : ✓   0x2705 : ✅   0x274E : ❎
+  0x274C : ❌  0x26A0 : ⚠   0x261B : ☛    0x2328 : ⌨
+  0x23ED : ⏭   0x23CF : ⏏
+
+  Available Characters :
+  0x2699 : ⚙   0x2B50 : ⭐  0x1F514: 🔔  0x1F6E1: 🛡
+  0x1F464: 👤  0x1F4E1: 📡  0x1F5C2: 📇  0x1F5A5: 🖥
+  0x1F4E2: 🔊  0x23F1 : ⏱   0x26AB : ●   0x1F518: 🔘
+  0x00A9 : ©   0x003E : >   0x2620 : ☠   0x2622 : ☢
+  0x2623 : ☣   0x1F197: 🆗  0x2757 : ❗  0x2139 : ℹ
+  0x2600 : ☀   0x2601 : ☁   0x2609 : ☉   0x2610 : ☐
+  0x2611 : ☑   0x2714 : ✔   0x1F44D: 👍  0x1F389: 🎉
+  0x1F3C1: 🏁  0x1F480: 💀  0x1F6D1: 🛑  0x26D4 : ⛔
+  0x1F6AB: 🚫  0x26D2 : ⛒   0x26DD : ⛝   0x2612 : ☒
+  0x2613 : ☓   0x2716 : ✖   0x261A : ☚   0x261D : ☝
+  0x261F : ☟   0x2630 : ☰   0x2631 : ☱   0x2632 : ☲
+  0x2633 : ☳   0x2634 : ☴   0x2635 : ☵   0x2636 : ☶
+  0x2637 : ☷   0x2638 : ☸   0x2639 : ☹   0x263A : ☺
+  0x263B : ☻   0x263C : ☼   0x267B : ♻   0x268A : ⚊
+  0x268B : ⚋   0x268C : ⚌   0x268D : ⚍   0x268E : ⚎
+  0x268F : ⚏   0x269B : ⚛   0x26A1 : ⚡  0x26CB : ⛋
+  0x26CC : ⛌   0x26DA : ⛚   0x26AA : ⚪  0x26BD : ⚽
+  0x26BE : ⚾  0x26DE : ⛞   0x26EC : ⛬   0x26ED : ⛭
+  0x26EE : ⛮   0x26EF : ⛯   0x26F6 : ⛶   0x2718 : ✘
+  0x2719 : ✙   0x271A : ✚   0x271B : ✛   0x271C : ✜
+  0x274D : ❍   0x274F : ❏   0x2750 : ❐   0x2794 : ➔
+  0x2795 : ➕  0x2799 : ➙   0x27A1 : ➡   0x27A8 : ➨
+  0x27B1 : ➱   0x27B2 : ➲   0x1F494: 💔  0x1F496: 💖
+  0x1F49F: 💟  0x1F4AD: 💭  0x1F4AF: 💯  0x1F4BB: 💻
+  0x1F4BD: 💽  0x1F4BE: 💾  0x1F4C1: 📁  0x1F4C2: 📂
+  0x1F4C3: 📃  0x1F4DD: 📝  0x1F4E3: 📣  0x1F4E4: 📤
+  0x1F4E5: 📥  0x1F4E8: 📨  0x1F4F3: 📳  0x1F4F5: 📵
+  0x1F4F6: 📶  0x1F501: 🔁  0x1F502: 🔂  0x1F503: 🔃
+  0x1F50B: 🔋  0x1F50C: 🔌  0x1F50D: 🔍  0x1F50E: 🔎
+  0x1F50F: 🔏  0x1F510: 🔐  0x1F511: 🔑  0x1F512: 🔒
+  0x1F513: 🔓
+____________________________________________________________
+       © 2026, www.AIIT.support. All Rights Reserved.
