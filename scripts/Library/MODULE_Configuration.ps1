@@ -50,7 +50,8 @@ $secScripts = @(
     "SET_EnableMSstoreSmartScreen-WinAuto.ps1",
     "SET_EnablePhishingProtection-WinAuto.ps1",
     "SET_EnablePhishingProtectionMalicious-WinAuto.ps1",
-    "SET_FirewallON-WinAuto.ps1"
+    "SET_FirewallON-WinAuto.ps1",
+    "SET_PowerShellSecurity-WinAuto.ps1"
 )
 
 foreach ($s in $secScripts) { 

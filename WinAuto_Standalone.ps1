@@ -36,6 +36,7 @@ This document details the specific technical changes that the **WinAuto** suite 
 | **SmartScreen (Store)** | **Enabled** | Registry: `HKCU\Software\Microsoft\Windows\CurrentVersion\AppHost` -> `EnableWebContentEvaluation = 1` |
 | **Phishing Protection** | **Enabled** | `Set-MpPreference -EnablePhishingProtection Enabled` |
 | **Firewall** | **Enabled** | `Set-NetFirewallProfile -Enabled True` (Domain, Private, Public) |
+| **PowerShell Sec** | **Logging ON** | Script Block, Module, & Transcription Logging (Group Policy/Registry) |
 
 ---
 
