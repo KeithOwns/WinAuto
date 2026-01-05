@@ -50,8 +50,7 @@ $secScripts = @(
     "SET_EnableMSstoreSmartScreen-WinAuto.ps1",
     "SET_EnablePhishingProtection-WinAuto.ps1",
     "SET_EnablePhishingProtectionMalicious-WinAuto.ps1",
-    "SET_FirewallON-WinAuto.ps1",
-    "SET_PowerShellSecurity-WinAuto.ps1"
+    "SET_FirewallON-WinAuto.ps1"
 )
 
 foreach ($s in $secScripts) { 
@@ -98,12 +97,13 @@ Write-LeftAligned "$Bold$FGCyan DEBLOAT & PRIVACY OPTIMIZATION $Reset"
 Write-Boundary $FGDarkCyan
 & "$PSScriptRoot\C3_WindowsDebloat_CLEAN.ps1" -AutoRun
 
-# 5. NETWORK SECURITY
+# 5. NETWORK & POWERSHELL SECURITY
 if ($EnhancedSecurity) {
     Write-Host ""
-    Write-LeftAligned "$Bold$FGCyan ENHANCED NETWORK SECURITY $Reset"
+    Write-LeftAligned "$Bold$FGCyan ENHANCED NETWORK & POWERSHELL SECURITY $Reset"
     Write-Boundary $FGDarkCyan
     & "$PSScriptRoot\C4_Network_FIXnSECURE.ps1" -AutoRun
+    & "$PSScriptRoot\SET_PowerShellSecurity-WinAuto.ps1" -Force
 } else {
     Write-Host ""
     Write-LeftAligned "$Bold$FGCyan RESTORING STANDARD NETWORK SETTINGS $Reset"
