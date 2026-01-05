@@ -1,4 +1,3 @@
-﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     WinAuto One-Liner Bootstrapper
@@ -10,10 +9,10 @@
     - Launches Suite
 #>
 
-param(
-    [string]$InstallDir = "$env:USERPROFILE\Documents\WinAuto",
-    [string]$RepoURL = "https://github.com/KeithOwns/WinAuto.git"
-)
+# --- CONFIGURATION ---
+# Params removed to support 'iex (irm ...)' invocation
+$InstallDir = "$env:USERPROFILE\Documents\WinAuto"
+$RepoURL = "https://github.com/KeithOwns/WinAuto.git"
 
 # --- SETUP ANSI COLORS ---
 $Esc = [char]0x1B
@@ -22,6 +21,16 @@ $Green = "$Esc[92m"; $Red = "$Esc[91m"; $Cyan = "$Esc[96m"; $Yellow = "$Esc[93m"
 function Write-Step { param($T) Write-Host " $Cyan[SETUP]$Reset $T" }
 function Write-Ok   { param($T) Write-Host " $Green[OK]$Reset    $T" }
 function Write-Err  { param($T) Write-Host " $Red[ERR]$Reset   $T" }
+
+# Helper to print padding before exit
+function Close-Script {
+    Write-Host ""
+    Write-Host ""
+    Write-Host ""
+    Write-Host ""
+    Write-Host ""
+    exit
+}
 
 Clear-Host
 Write-Host ""
@@ -33,7 +42,7 @@ Write-Host ""
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Err "Administrator privileges required."
     Start-Sleep -Seconds 2
-    exit
+    Close-Script
 }
 
 # 2. CHECK GIT
@@ -47,7 +56,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
         Write-Ok "Git installed. (Note: You may need to restart the script if git is not found immediately)"
     } catch {
         Write-Err "Failed to install Git. Please install Git manually and retry."
-        exit
+        Close-Script
     }
 }
 
@@ -71,7 +80,7 @@ if (Test-Path $InstallDir) {
         else { throw "Git clone failed." }
     } catch {
         Write-Err "Failed to clone repository. Check internet connection."
-        exit
+        Close-Script
     }
 }
 
@@ -95,5 +104,12 @@ Write-Host ""
 Write-Ok "Installation complete!"
 Write-Step "Launching WinAuto..."
 Start-Sleep -Seconds 2
-& "$InstallDir\WinAuto.bat"
 
+# Print padding before handing off control to the batch file or exiting
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+
+& "$InstallDir\WinAuto.bat"
