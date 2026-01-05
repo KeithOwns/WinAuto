@@ -28,7 +28,6 @@ This document details the specific technical changes that the **WinAuto** suite 
 | :--- | :--- | :--- |
 | **Microsoft Updates** | **Enabled** | Registry: `HKLM\...\WindowsUpdate\UX\Settings` -> `AllowMUUpdateService = 1` |
 | **Metered Connections** | **Allowed** | Registry: `HKLM\...\WindowsUpdate\UX\Settings` -> `AllowAutoWindowsUpdateDownloadOverMeteredNetwork = 1` |
-| **Expedited Updates** | **Enabled** | Registry: `HKLM\...\WindowsUpdate\UX\Settings` -> `IsExpedited = 1` |
 | **Restart Notifications**| **Enabled** | Registry: `HKLM\...\WindowsUpdate\UX\Settings` -> `RestartNotificationsAllowed2 = 1` |
 | **ARSO (Auto Login)** | **Enabled** | Registry: `HKLM\...\Winlogon\UserARSO\{SID}` -> `OptOut = 0` (Allows finishing setup after reboot) |
 | **App Restart** | **Enabled** | Registry: `HKCU\...\Winlogon` -> `RestartApps = 1` |
@@ -44,6 +43,7 @@ This document details the specific technical changes that the **WinAuto** suite 
 | **System Repair** | Scan & Repair OS | `sfc /scannow` (and `DISM /RestoreHealth` if needed) |
 | **Disk Optimization** | TRIM/Defrag | `Optimize-Volume -DriveLetter C -ReTrim` (SSD) or `-Defrag` (HDD) |
 | **Cleanup** | Clear Temp Files | Delete files in `%TEMP%` and `%WINDIR%\Temp` |
+| **Runtimes** | Install C++ Redist | `RUN_Install_CppRedist-WinAuto.ps1` (Installs latest x64/x86) |
 | **Updates** | App Updates | `winget upgrade --all` |
 | **Updates** | Store Updates | Automates Microsoft Store UI to click "Get updates" |
 | **Updates** | OS Updates | Automates Settings UI to click "Check for updates" |

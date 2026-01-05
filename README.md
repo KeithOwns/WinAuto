@@ -11,7 +11,7 @@
 Run this command in PowerShell (Admin) to download, install, and launch WinAuto automatically:
 
 ```powershell
-iex (irm https://raw.githubusercontent.com/KeithOwns/WinAuto/master/setup.ps1)
+iex (irm https://raw.githubusercontent.com/KeithOwns/WinAuto/main/setup.ps1)
 ```
 
 *(This downloads `setup.ps1`, checks dependencies, clones the repo to your Documents folder, and creates a Desktop shortcut.)*
@@ -23,6 +23,7 @@ iex (irm https://raw.githubusercontent.com/KeithOwns/WinAuto/master/setup.ps1)
 It serves as a reference implementation for:
 *   **Security Posture Management:** Automating compliance with Microsoft Security Baselines (Defender, Firewall, ASR).
 *   **System Maintenance:** Leveraging native Windows APIs (COM, WMI/CIM) for updates and health checks.
+*   **Application Deployment:** Automated, silent installation of fundamental runtimes like Visual C++ Redistributables.
 *   **Modular Architecture:** A centralized library design that promotes code reuse and maintainability.
 
 ---
