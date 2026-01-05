@@ -42,6 +42,8 @@ while ($true) {
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[E]${Reset} ${FGYellow}Enhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
     Write-Host ""
+    Write-LeftAligned " ${FGBlack}${BGYellow}[I]${Reset} ${FGGray}Install Applications${Reset}"
+    Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
 
     Write-Boundary
@@ -64,6 +66,12 @@ while ($true) {
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
         continue
+    } elseif ($res.Character -eq 'I' -or $res.Character -eq 'i') {
+        # Install C++ Redistributables
+        & "$PSScriptRoot\..\Library\RUN_Install_CppRedist-WinAuto.ps1"
+        Write-Boundary
+        Write-Centered "Press any key to return to menu..."
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {
         Clear-Host
         Write-Header "SYSTEM IMPACT MANIFEST"
