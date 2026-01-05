@@ -6,10 +6,11 @@
     Fully automated core configuration. Non-blocking.
 #>
 
-param([switch]$SmartRun)
+param([switch]$SmartRun, [switch]$EnhancedSecurity)
 
 # --- SHARED FUNCTIONS ---
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
+. "$PSScriptRoot\WinAuto_Functions.ps1"
 $Global:WinAutoCompactMode = $true
 
 # --- LOGGING ---
@@ -84,7 +85,30 @@ foreach ($s in $secScripts) {
 
 & "$PSScriptRoot\SET_VisualEffectsPerformance-WinAuto.ps1"
 
+# 3. WINDOWS UPDATE CONFIGURATION
+Write-Host ""
+Write-LeftAligned "$Bold$FGCyan WINDOWS UPDATE CONFIGURATION $Reset"
+Write-Boundary $FGDarkCyan
+Set-WUSettings -EnhancedSecurity:$EnhancedSecurity
 
+# 4. DEBLOAT & PRIVACY (Standard)
+Write-Host ""
+Write-LeftAligned "$Bold$FGCyan DEBLOAT & PRIVACY OPTIMIZATION $Reset"
+Write-Boundary $FGDarkCyan
+& "$PSScriptRoot\C3_WindowsDebloat_CLEAN.ps1" -AutoRun
+
+# 5. NETWORK SECURITY
+if ($EnhancedSecurity) {
+    Write-Host ""
+    Write-LeftAligned "$Bold$FGCyan ENHANCED NETWORK SECURITY $Reset"
+    Write-Boundary $FGDarkCyan
+    & "$PSScriptRoot\C4_Network_FIXnSECURE.ps1" -AutoRun
+} else {
+    Write-Host ""
+    Write-LeftAligned "$Bold$FGCyan RESTORING STANDARD NETWORK SETTINGS $Reset"
+    Write-Boundary $FGDarkCyan
+    & "$PSScriptRoot\C4_Network_FIXnSECURE.ps1" -AutoRun -Undo
+}
 
 Write-Boundary
 

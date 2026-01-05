@@ -39,6 +39,11 @@ $ErrorActionPreference = 'Continue'
 # --- SHARED FUNCTIONS ---
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
 
+# --- LOGGING SETUP ---
+. "$PSScriptRoot\MODULE_Logging.ps1"
+Init-Logging
+
+
 # --- Unified Helper Functions ---
 
 function Get-RegistryValue {
@@ -55,11 +60,12 @@ function Get-RegistryValue {
 function Set-RegistryDword {
     param([Parameter(Mandatory)] [string]$Path, [Parameter(Mandatory)] [string]$Name, [Parameter(Mandatory)] [int]$Value)
     try {
-        if (-not (Test-Path $Path)) {
-            New-Item -Path $Path -Force | Out-Null
-            Write-Log -Message "Created registry path: $Path" -Level INFO
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
+        if (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue) {
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type DWord -Force | Out-Null
+        } else {
+            New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
         }
-        New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
         Write-Log -Message "Set registry: $Path\$Name = $Value" -Level SUCCESS
     } catch {
         Write-Log -Message "Failed to set registry: $Path\$Name - $($_.Exception.Message)" -Level ERROR
@@ -553,7 +559,11 @@ try {
         Invoke-ApplySecuritySettings
     }
     
+    # Report
+    Get-LogReport
+    
     $FooterText = "$Char_Copyright 2026, www.AIIT.support. All Rights Reserved."
+
     Write-Centered "$FGCyan$FooterText$Reset"
     
     Write-Host ""

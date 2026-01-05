@@ -13,6 +13,11 @@ $ErrorActionPreference = 'Stop'
 # --- SHARED FUNCTIONS ---
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
 
+# --- LOGGING SETUP ---
+. "$PSScriptRoot\MODULE_Logging.ps1"
+Init-Logging
+
+
 # --- [USER PREFERENCE] CLEAR SCREEN START ---
 
 # --------------------------------------------
@@ -109,7 +114,7 @@ while ($running) {
                     'U' { & "$PSScriptRoot\RUN_Update_Suite.ps1" }
                     'P' { & "$PSScriptRoot\RUN_Pack_Portable.ps1" }
                     'R' { & "$PSScriptRoot\RUN_Remote_EXECUTE.ps1" }
-                    'D' { & "$PSScriptRoot\C3_WindowsDebloat_CLEAN.ps1" }
+                    'D' { & "$PSScriptRoot\C3_WindowsDebloat_CLEAN.ps1" -Undo }
                     'X' { & "$PSScriptRoot\RUN_Suite_CLEANUP.ps1" }
                     Default { $utilsRunning = $false }
                 }
@@ -136,6 +141,9 @@ while ($running) {
         }
     }
 }
+
+# Report
+Get-LogReport
 
 # --- FOOTER ---
 Write-Host ""

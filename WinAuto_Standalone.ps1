@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     WinAuto Standalone Edition
@@ -13,6 +13,7 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+$Global:EnhancedSecurity = $false
 
 # --- MANIFEST CONTENT ---
 $Global:WinAutoManifestContent = @"
@@ -78,7 +79,7 @@ This document details the specific technical changes that the **WinAuto** suite 
 | **Animations** | **Disabled** | Registry: `HKCU\...\Explorer\Advanced` -> `TaskbarAnimations = 0` |
 
 ---
-© 2026, www.AIIT.support. All Rights Reserved.
+Â© 2026, www.AIIT.support. All Rights Reserved.
 "@
 
 # --- GLOBAL RESOURCES ---
@@ -425,7 +426,11 @@ function Set-RegistryDword {
     param([string]$Path, [string]$Name, [int]$Value)
     try {
         if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
-        New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
+        if (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue) {
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type DWord -Force | Out-Null
+        } else {
+            New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
+        }
     } catch { throw $_ }
 }
 
@@ -468,6 +473,76 @@ function Invoke-AnimatedPause {
 }
 
 # --- CONFIGURATION FUNCTIONS ---
+
+function Invoke-WA_HardenNetwork {
+    Write-Header "ENHANCED NETWORK SECURITY"
+    
+    # 1. Protocols
+    try {
+        # LLMNR
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient"
+        Set-RegistryDword -Path $path -Name "EnableMulticast" -Value 0
+        Write-LeftAligned "$FGGreen$Char_BallotCheck LLMNR Disabled.$Reset"
+
+        # NetBIOS
+        $adapters = Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled -eq $true }
+        foreach ($a in $adapters) { $a.SetTcpipNetbios(2) | Out-Null }
+        Write-LeftAligned "$FGGreen$Char_BallotCheck NetBIOS Disabled.$Reset"
+    } catch { Write-LeftAligned "$FGRed$Char_RedCross Protocol Hardening failed.$Reset" }
+
+    # 2. Secure DNS
+    try {
+        $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+        foreach ($a in $adapters) {
+            Set-DnsClientServerAddress -InterfaceIndex $a.InterfaceIndex -ServerAddresses ("1.1.1.1", "1.0.0.1") -ErrorAction SilentlyContinue
+        }
+        Write-LeftAligned "$FGGreen$Char_BallotCheck Secure DNS (Cloudflare) Set.$Reset"
+    } catch { Write-LeftAligned "$FGRed$Char_RedCross DNS Configuration failed.$Reset" }
+}
+
+function Invoke-WA_DebloatUI {
+    Write-Header "ENHANCED DEBLOAT & UI"
+
+    # 1. Privacy
+    try {
+        Set-RegistryDword -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0
+        Set-RegistryDword -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0
+        Set-RegistryDword -Path "HKCU:\Software\Policies\Microsoft\Windows\CloudContent" -Name "DisableTailoredExperiencesWithDiagnosticData" -Value 1
+        Write-LeftAligned "$FGGreen$Char_CheckMark Privacy Hardened.$Reset"
+    } catch {}
+
+    # 2. Explorer
+    try {
+        $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+        Set-RegistryDword -Path $path -Name "HideFileExt" -Value 0
+        Set-RegistryDword -Path $path -Name "Hidden" -Value 1
+        Set-RegistryDword -Path $path -Name "ShowSuperHidden" -Value 1
+        Write-LeftAligned "$FGGreen$Char_CheckMark Explorer Configured (Show All).$Reset"
+    } catch {}
+
+    # 3. Context Menu
+    try {
+        $key = "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"
+        if (-not (Test-Path $key)) { New-Item -Path $key -Force | Out-Null }
+        Set-ItemProperty -Path $key -Name "(default)" -Value "" -Force
+        Write-LeftAligned "$FGGreen$Char_CheckMark Classic Context Menu Enabled.$Reset"
+    } catch {}
+
+    # 4. Bloatware (Simplified List)
+    $bloat = @("*Spotify*", "*TikTok*", "*CandyCrush*", "*Disney*", "*Netflix*")
+    $count = 0
+    foreach ($b in $bloat) {
+        $app = Get-AppxPackage -Name $b -ErrorAction SilentlyContinue
+        if ($app) {
+            $app | Remove-AppxPackage -ErrorAction SilentlyContinue
+            $count++
+        }
+    }
+    if ($count -gt 0) { Write-LeftAligned "$FGGreen$Char_CheckMark Removed $count Bloatware Apps.$Reset" }
+    
+    # Restart Explorer
+    Stop-Process -Name explorer -Force
+}
 
 function Invoke-WA_SetRealTimeProtection {
     param([switch]$Undo)
@@ -613,14 +688,25 @@ function Invoke-WA_SystemPreCheck {
 }
 
 function Invoke-WA_WindowsUpdate {
+    param([switch]$EnhancedSecurity)
     Write-Header "WINDOWS UPDATE SET & SCAN"
     # Settings
     $WU_UX  = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
     try {
-        Set-RegistryDword -Path $WU_UX -Name "IsContinuousInnovationOptedIn" -Value 1
         Set-RegistryDword -Path $WU_UX -Name "AllowMUUpdateService" -Value 1
-        Set-RegistryDword -Path $WU_UX -Name "IsExpedited" -Value 1
         Set-RegistryDword -Path $WU_UX -Name "RestartNotificationsAllowed2" -Value 1
+
+        # Enable Restartable Apps
+        $WinlogonPath = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+        Set-ItemProperty -Path $WinlogonPath -Name "RestartApps" -Value 1 -Type DWord -Force
+        
+        if ($EnhancedSecurity) {
+            Set-RegistryDword -Path $WU_UX -Name "IsExpedited" -Value 1
+            Set-RegistryDword -Path $WU_UX -Name "AllowAutoWindowsUpdateDownloadOverMeteredNetwork" -Value 1
+        } else {
+            Set-RegistryDword -Path $WU_UX -Name "IsExpedited" -Value 0
+            Set-RegistryDword -Path $WU_UX -Name "AllowAutoWindowsUpdateDownloadOverMeteredNetwork" -Value 0
+        }
         Write-Log -Message "Applied Windows Update settings." -Level INFO
     } catch {}
 
@@ -647,12 +733,93 @@ function Invoke-WA_WindowsUpdate {
 
     Write-Host ""
     Write-Centered "$Char_EnDash STORE & SETTINGS $Char_EnDash" -Color "$Bold$FGCyan"
+
+    # UI Automation Setup
+    try {
+        Add-Type -AssemblyName UIAutomationClient
+        Add-Type -AssemblyName UIAutomationTypes
+    } catch {
+        Write-LeftAligned "$FGRed$Char_RedCross Failed to load UI Automation assemblies.$Reset"
+    }
+
+    # 1. Windows Update Settings
     Write-LeftAligned "Opening Windows Update Settings..."
     Start-Process "ms-settings:windowsupdate"
+    
+    # Wait for Window
+    $timeout = 10
+    $startTime = Get-Date
+    $settingsWindow = $null
+    
+    do {
+        $desktop = [System.Windows.Automation.AutomationElement]::RootElement
+        $condition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, "Settings")
+        $settingsWindow = $desktop.FindFirst([System.Windows.Automation.TreeScope]::Children, $condition)
+        if ($settingsWindow -ne $null) { break }
+        Start-Sleep -Milliseconds 500
+    } while ((Get-Date) -lt $startTime.AddSeconds($timeout))
+    
+    if ($settingsWindow) {
+        Start-Sleep -Seconds 2
+        $targetButtons = @("Check for updates", "Download & install all", "Install all", "Restart now")
+        $buttonFound = $false
+        foreach ($text in $targetButtons) {
+            $buttonCondition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $text)
+            $button = $settingsWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $buttonCondition)
+            if ($button) {
+                $invokePattern = $button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
+                if ($invokePattern) {
+                    $invokePattern.Invoke()
+                    Write-LeftAligned "$FGGreen$Char_HeavyCheck Clicked '$text'$Reset"
+                    $buttonFound = $true
+                    break
+                }
+            }
+        }
+        if (-not $buttonFound) { Write-LeftAligned "$FGGray No actionable buttons found in Settings.$Reset" }
+    } else {
+        Write-LeftAligned "$FGRed$Char_Warn Could not attach to Settings window.$Reset"
+    }
+
+    # 2. Microsoft Store
     Write-LeftAligned "Opening Microsoft Store Updates..."
     Start-Process "ms-windows-store://downloadsandupdates"
     
-    Write-LeftAligned "$FGGray Check opened windows to finish updates.$Reset"
+    $timeout = 10
+    $startTime = Get-Date
+    $storeWindow = $null
+    
+    do {
+        $desktop = [System.Windows.Automation.AutomationElement]::RootElement
+        $condition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, "Microsoft Store")
+        $storeWindow = $desktop.FindFirst([System.Windows.Automation.TreeScope]::Children, $condition)
+        if ($storeWindow -ne $null) { break }
+        Start-Sleep -Milliseconds 500
+    } while ((Get-Date) -lt $startTime.AddSeconds($timeout))
+
+    if ($storeWindow) {
+        Start-Sleep -Seconds 2
+        $buttonTexts = @("Get updates", "Check for updates", "Update all")
+        $buttonFound = $false
+        foreach ($buttonText in $buttonTexts) {
+            $buttonCondition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $buttonText)
+            $button = $storeWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $buttonCondition)
+            if ($button) {
+                $invokePattern = $button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
+                if ($invokePattern) {
+                    $invokePattern.Invoke()
+                    Write-LeftAligned "$FGGreen$Char_HeavyCheck Clicked '$buttonText'$Reset"
+                    $buttonFound = $true
+                    break
+                }
+            }
+        }
+        if (-not $buttonFound) { Write-LeftAligned "$FGGray No update button found in Store.$Reset" }
+    } else {
+        Write-LeftAligned "$FGRed$Char_Warn Could not attach to Store window.$Reset"
+    }
+    
+    Write-LeftAligned "$FGGray Checks initiated. Monitor windows for progress.$Reset"
     Start-Sleep -Seconds 3
 }
 
@@ -694,7 +861,7 @@ function Invoke-WA_SystemCleanup {
 # --- MODULE HANDLERS ---
 
 function Invoke-WinAutoConfiguration {
-    param([switch]$SmartRun)
+    param([switch]$SmartRun, [switch]$EnhancedSecurity)
     Write-Header "WINDOWS CONFIGURATION PHASE"
     $lastRun = Get-WinAutoLastRun -Module "Configuration"
     Write-LeftAligned "$FGGray Last Run: $FGWhite$lastRun$Reset"
@@ -720,6 +887,11 @@ function Invoke-WinAutoConfiguration {
     Invoke-WA_SetFirewall
     Invoke-WA_SetVisualFX
 
+    if ($EnhancedSecurity) {
+        Invoke-WA_HardenNetwork
+        Invoke-WA_DebloatUI
+    }
+
     Write-Boundary
     Write-Centered "$FGGreen CONFIGURATION COMPLETE $Reset"
     Set-WinAutoLastRun -Module "Configuration"
@@ -727,7 +899,7 @@ function Invoke-WinAutoConfiguration {
 }
 
 function Invoke-WinAutoMaintenance {
-    param([switch]$SmartRun)
+    param([switch]$SmartRun, [switch]$EnhancedSecurity)
     Write-Header "WINDOWS MAINTENANCE PHASE"
     $lastRun = Get-WinAutoLastRun -Module "Maintenance"
     Write-LeftAligned "$FGGray Last Run: $FGWhite$lastRun$Reset"
@@ -745,7 +917,7 @@ function Invoke-WinAutoMaintenance {
 
     Write-Boundary
     Invoke-WA_SystemPreCheck
-    Invoke-WA_WindowsUpdate
+    Invoke-WA_WindowsUpdate -EnhancedSecurity:$EnhancedSecurity
 
     if (Test-RunNeeded -Key "Maintenance_SFC" -Days 30) {
         Invoke-WA_SFCRepair
@@ -779,6 +951,7 @@ while ($true) {
     Write-Header "WINAUTO: MASTER CONTROL"
     $lastConfig = Get-WinAutoLastRun -Module "Configuration"
     $lastMaint  = Get-WinAutoLastRun -Module "Maintenance"
+    $enStatus   = if ($Global:EnhancedSecurity) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
 
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
@@ -786,21 +959,26 @@ while ($true) {
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Smart Run${FGGray} (Recommended)${Reset}"
     Write-Host ""
+    Write-LeftAligned " ${FGBlack}${BGYellow}[E]${Reset} ${FGYellow}Enhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
+    Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
     Write-Boundary
 
     $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 10
 
     if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'A' -or $res.Character -eq 'a') {
-        Invoke-WinAutoConfiguration -SmartRun
-        Invoke-WinAutoMaintenance -SmartRun
+        Invoke-WinAutoConfiguration -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
+        Invoke-WinAutoMaintenance -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         break
     } elseif ($res.Character -eq '1') {
-        Invoke-WinAutoConfiguration
+        Invoke-WinAutoConfiguration -EnhancedSecurity:$Global:EnhancedSecurity
         break
     } elseif ($res.Character -eq '2') {
-        Invoke-WinAutoMaintenance
+        Invoke-WinAutoMaintenance -EnhancedSecurity:$Global:EnhancedSecurity
         break
+    } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
+        $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
+        continue
     } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {
         Clear-Host
         Write-Header "SYSTEM IMPACT MANIFEST"
@@ -820,3 +998,4 @@ Write-Boundary
 Write-Centered "$FGGreen ALL REQUESTED TASKS COMPLETE $Reset"
 Write-Footer
 Write-Host ""
+

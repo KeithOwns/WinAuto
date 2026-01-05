@@ -6,7 +6,7 @@
     Fully automated maintenance of Windows 11. Non-blocking.
 #>
 
-param([switch]$SmartRun)
+param([switch]$SmartRun, [switch]$EnhancedSecurity)
 
 # --- SHARED FUNCTIONS ---
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
@@ -48,7 +48,7 @@ Write-Log "Starting Maintenance Phase" -Level INFO
 & "$PSScriptRoot\CHECK_System_PreCheck.ps1"
 
 # 2. UPDATES (Always Run)
-& "$PSScriptRoot\C1_WindowsUpdate_SETnSCAN.ps1" -AutoRun
+& "$PSScriptRoot\C1_WindowsUpdate_SETnSCAN.ps1" -AutoRun -EnhancedSecurity:$EnhancedSecurity
 
 # 3. REPAIR (SFC - 30 Days)
 if (Test-RunNeeded -Key "Maintenance_SFC" -Days 30) {

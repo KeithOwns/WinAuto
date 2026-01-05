@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     WinAuto One-Liner Bootstrapper
@@ -96,3 +96,4 @@ Write-Ok "Installation complete!"
 Write-Step "Launching WinAuto..."
 Start-Sleep -Seconds 2
 & "$InstallDir\WinAuto.bat"
+

@@ -7,6 +7,8 @@
     network security by disabling legacy protocols (NetBIOS, LLMNR).
 #>
 
+param([switch]$AutoRun, [switch]$Undo)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
@@ -81,6 +83,30 @@ function Secure-Protocols {
     }
 }
 
+function Restore-Protocols {
+    Write-Host ""
+    Write-LeftAligned "$FGYellow Restoring Network Protocols (Undo Hardening)...$Reset"
+    
+    try {
+        # Re-Enable LLMNR
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient"
+        if (Test-Path $path) {
+            Set-ItemProperty -Path $path -Name "EnableMulticast" -Value 1 -Type DWord
+            Write-LeftAligned "$FGGreen$Char_BallotCheck LLMNR Enabled.$Reset"
+        }
+        
+        # Re-Enable NetBIOS (Set to DHCP Default = 0)
+        $adapters = Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled -eq $true }
+        foreach ($adapter in $adapters) {
+            $adapter.SetTcpipNetbios(0) | Out-Null
+        }
+        Write-LeftAligned "$FGGreen$Char_BallotCheck NetBIOS over TCP/IP Restored to DHCP Default.$Reset"
+        
+    } catch {
+        Write-LeftAligned "$FGRed$Char_RedCross Error restoring protocols: $($_.Exception.Message)$Reset"
+    }
+}
+
 function Set-SecureDNS {
     Write-Host ""
     Write-LeftAligned "$FGYellow Configuring Secure DNS (Cloudflare)...$Reset"
@@ -95,6 +121,35 @@ function Set-SecureDNS {
     } catch {
         Write-LeftAligned "$FGRed$Char_RedCross Error setting DNS: $($_.Exception.Message)$Reset"
     }
+}
+
+function Reset-DNS {
+    Write-Host ""
+    Write-LeftAligned "$FGYellow Resetting DNS to DHCP...$Reset"
+    
+    try {
+        $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+        foreach ($adapter in $adapters) {
+            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ResetServerAddresses -ErrorAction SilentlyContinue
+            Write-LeftAligned "  Reset $($adapter.Name)"
+        }
+        Write-LeftAligned "$FGGreen$Char_BallotCheck DNS reset to Auto (DHCP).$Reset"
+    } catch {
+        Write-LeftAligned "$FGRed$Char_RedCross Error resetting DNS: $($_.Exception.Message)$Reset"
+    }
+}
+
+# --- AUTO RUN ---
+if ($AutoRun) {
+    Write-Header "NETWORK SECURITY HARDENING"
+    if ($Undo) {
+        Restore-Protocols
+        Reset-DNS
+    } else {
+        Secure-Protocols
+        Set-SecureDNS
+    }
+    exit
 }
 
 # --- MAIN MENU ---

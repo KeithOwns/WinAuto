@@ -1,3 +1,4 @@
+﻿#Requires -RunAsAdministrator
 function Get-ThirdPartyAV {
     <#
     .SYNOPSIS
@@ -69,5 +70,59 @@ function Test-TamperProtection {
     catch {
         Write-Verbose "Could not determine Tamper Protection status: $($_.Exception.Message)"
         return $false
+    }
+}
+
+function Initialize-WinAutoLogging {
+    <#
+    .SYNOPSIS
+        Loads and initializes the WinAuto logging module.
+    #>
+    $LoggingModule = "$PSScriptRoot\MODULE_Logging.ps1"
+    if (Test-Path $LoggingModule) {
+        . $LoggingModule
+        Init-Logging
+    } else {
+        Write-Warning "Logging module not found at $LoggingModule"
+    }
+}
+
+function Set-WUSettings {
+    <#
+    .SYNOPSIS
+        Applies Windows Update registry configurations based on security mode.
+    .PARAMETER EnhancedSecurity
+        If true, enables expedited updates and metered downloads.
+    #>
+    param([switch]$EnhancedSecurity)
+    
+    # REGISTRY PATHS
+    $Path_UX = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
+    $Path_Policy = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+    
+    try {
+        if ($EnhancedSecurity) {
+            # Set other expedited settings
+            Set-RegistryDword -Path $Path_UX -Name "IsExpedited" -Value 1
+            Set-RegistryDword -Path $Path_UX -Name "AllowAutoWindowsUpdateDownloadOverMeteredNetwork" -Value 1
+        } else {
+            Set-RegistryDword -Path $Path_UX -Name "IsExpedited" -Value 0
+            Set-RegistryDword -Path $Path_UX -Name "AllowAutoWindowsUpdateDownloadOverMeteredNetwork" -Value 0
+        }
+        
+        # General Required Settings
+        Set-RegistryDword -Path $Path_UX -Name "AllowMUUpdateService" -Value 1
+        Set-RegistryDword -Path $Path_UX -Name "RestartNotificationsAllowed2" -Value 1
+        
+        # Enable Restartable Apps
+        $WinlogonPath = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+        Set-ItemProperty -Path $WinlogonPath -Name "RestartApps" -Value 1 -Type DWord -Force
+        
+        # Kill Settings app to refresh UI
+        Get-Process "SystemSettings" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        
+    }
+    catch {
+        Write-Host "ERROR in Set-WUSettings: $($_.Exception.Message)" -ForegroundColor Red
     }
 }

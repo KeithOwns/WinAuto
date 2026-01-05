@@ -11,3 +11,4 @@ AppData/
 .vscode/
 *.log
 *.tmp
+logs/

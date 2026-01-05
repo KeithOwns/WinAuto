@@ -12,13 +12,18 @@
 $Global:WinAutoCompactMode = $true
 $Global:WinAutoManualActions = @()
 
+# --- LOGGING SETUP ---
+. "$PSScriptRoot\..\Library\MODULE_Logging.ps1"
+Init-Logging
+
 # Disable Console QuickEdit to prevent hanging
 Set-ConsoleSnapRight -Columns 64
 Disable-QuickEdit
 
-# Ensure log directory exists
-if (-not (Test-Path $Global:WinAutoLogDir)) { New-Item -Path $Global:WinAutoLogDir -ItemType Directory -Force | Out-Null }
 Write-Log "WinAuto Session Started" -Level INFO
+
+# Default to Standard Mode (Roadmap features OFF)
+$Global:EnhancedSecurity = $false
 
 # --- MAIN EXECUTION ---
 while ($true) {
@@ -27,12 +32,15 @@ while ($true) {
 
     $lastConfig = Get-WinAutoLastRun -Module "Configuration"
     $lastMaint  = Get-WinAutoLastRun -Module "Maintenance"
+    $enStatus   = if ($Global:EnhancedSecurity) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
 
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
     Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Smart Run${FGGray} (Recommended)${Reset}"
+    Write-Host ""
+    Write-LeftAligned " ${FGBlack}${BGYellow}[E]${Reset} ${FGYellow}Enhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
 
@@ -42,24 +50,27 @@ while ($true) {
 
     if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'A' -or $res.Character -eq 'a') {
         # Smart Run
-        & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -SmartRun
-        & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -SmartRun
+        & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
+        & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         break
     } elseif ($res.Character -eq '1') {
         # Force Run
-        & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1"
+        & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -EnhancedSecurity:$Global:EnhancedSecurity
         break
     } elseif ($res.Character -eq '2') {
         # Force Run
-        & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1"
+        & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -EnhancedSecurity:$Global:EnhancedSecurity
         break
+    } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
+        $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
+        continue
     } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {
         Clear-Host
         Write-Header "SYSTEM IMPACT MANIFEST"
         Write-Host ""
         
         # Check for Manifest file
-        $manifestPath = "$PSScriptRoot\..\..\MANIFEST.md"
+        $manifestPath = "$PSScriptRoot\..\..\docs\MANIFEST\MANIFEST.md"
         if (Test-Path $manifestPath) {
             $content = Get-Content $manifestPath
             # Simple pager
@@ -111,4 +122,6 @@ Write-Log "WinAuto Session Completed Successfully" -Level SUCCESS
 $FooterText = "$Char_Copyright 2026, www.AIIT.support. All Rights Reserved."
 Write-Centered "$FGCyan$FooterText$Reset"
 Write-Host ""
+
+try { Stop-Transcript -ErrorAction SilentlyContinue } catch {}
 

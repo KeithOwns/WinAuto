@@ -342,7 +342,11 @@ function Set-RegistryDword {
     param([Parameter(Mandatory)] [string]$Path, [Parameter(Mandatory)] [string]$Name, [Parameter(Mandatory)] [int]$Value, [string]$LogPath)
     try {
         if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
-        New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
+        if (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue) {
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type DWord -Force | Out-Null
+        } else {
+            New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
+        }
         if ($LogPath) { Write-Log -Message "Set registry: $Path\$Name = $Value" -Level SUCCESS -Path $LogPath }
     } catch {
         if ($LogPath) { Write-Log -Message "Failed to set registry: $Path\$Name - $($_.Exception.Message)" -Level ERROR -Path $LogPath }
@@ -354,7 +358,11 @@ function Set-RegistryString {
     param([Parameter(Mandatory)] [string]$Path, [Parameter(Mandatory)] [string]$Name, [Parameter(Mandatory)] [string]$Value, [string]$LogPath)
     try {
         if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
-        New-ItemProperty -Path $Path -Name $Name -PropertyType String -Value $Value -Force | Out-Null
+        if (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue) {
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type String -Force | Out-Null
+        } else {
+            New-ItemProperty -Path $Path -Name $Name -PropertyType String -Value $Value -Force | Out-Null
+        }
         if ($LogPath) { Write-Log -Message "Set registry string: $Path\$Name = $Value" -Level SUCCESS -Path $LogPath }
     } catch {
         if ($LogPath) { Write-Log -Message "Failed to set registry: $Path\$Name - $($_.Exception.Message)" -Level ERROR -Path $LogPath }

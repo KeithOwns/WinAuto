@@ -122,9 +122,15 @@ $Char_Lock        = [char]::ConvertFromUtf32(0x1F512) # ðŸ”’
 $Char_Unlock      = [char]::ConvertFromUtf32(0x1F513) # ðŸ”“
 
 # --- SYSTEM PATHS ---
-if (-not $Global:WinAutoLogDir) { $Global:WinAutoLogDir = "$env:USERPROFILE\Downloads\WinAuto_Logs" }
+if (-not (Get-Variable -Name "WinAutoLogDir" -Scope Global -ErrorAction SilentlyContinue)) { $Global:WinAutoLogDir = "$env:USERPROFILE\Downloads\WinAuto_Logs" }
 $env:WinAutoLogDir = $Global:WinAutoLogDir
-if (-not $Global:WinAutoLogPath) { $Global:WinAutoLogPath = "$Global:WinAutoLogDir\WinAuto_$(Get-Date -Format 'yyyyMMdd_HHmmss').log" }
+if (-not (Get-Variable -Name "WinAutoLogPath" -Scope Global -ErrorAction SilentlyContinue)) { $Global:WinAutoLogPath = "$Global:WinAutoLogDir\WinAuto_$(Get-Date -Format 'yyyyMMdd_HHmmss').log" }
+
+# Registry Paths (Shared)
+$Global:RegPath_WU_UX  = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
+$Global:RegPath_WU_POL = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+$Global:RegPath_Winlogon_User = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" 
+$Global:RegPath_Winlogon_Machine = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
 # Lines & Blocks
 $Char_EmDash      = [char]0x2014 # â€”

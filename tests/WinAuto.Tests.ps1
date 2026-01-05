@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester Unit Tests for WinAuto
 .DESCRIPTION
@@ -70,3 +70,4 @@ Describe "WinAuto Code Quality" {
         }
     }
 }
+

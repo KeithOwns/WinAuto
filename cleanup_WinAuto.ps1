@@ -1,4 +1,4 @@
-# Requires -RunAsAdministrator
+﻿# Requires -RunAsAdministrator
 
 # 1. Clear the host per project standards
 Clear-Host

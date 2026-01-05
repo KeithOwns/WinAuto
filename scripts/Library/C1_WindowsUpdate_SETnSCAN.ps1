@@ -1,10 +1,16 @@
-﻿#Requires -RunAsAdministrator
-param([switch]$AutoRun)
+#Requires -RunAsAdministrator
+param([switch]$AutoRun, [switch]$EnhancedSecurity)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 # --- SHARED FUNCTIONS ---
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
+. "$PSScriptRoot\WinAuto_Functions.ps1"
+
+# --- LOGGING SETUP ---
+. "$PSScriptRoot\MODULE_Logging.ps1"
+Init-Logging
+
 
 # --- [USER PREFERENCE] CLEAR SCREEN START ---
 
@@ -18,24 +24,6 @@ function Get-RegistryValue {
         return $null
     } catch { return $null }
 }
-
-function Set-RegistryDword {
-    param([Parameter(Mandatory)] [string]$Path, [Parameter(Mandatory)] [string]$Name, [Parameter(Mandatory)] [int]$Value)
-    try {
-        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
-        New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
-        Write-Log -Message "Set registry: $Path\$Name = $Value" -Level SUCCESS
-    } catch {
-        Write-Log -Message "Failed to set registry: $Path\$Name - $($_.Exception.Message)" -Level ERROR
-        throw $_ 
-    }
-}
-
-# Registry Paths
-$WU_UX  = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
-$WU_POL = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
-$WINLOGON_USER = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" 
-$WINLOGON_MACHINE = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
 function Show-WUStatus {
     Write-Boundary $FGDarkGray
@@ -106,31 +94,27 @@ function Show-WUStatus {
     Write-Host ""
     Write-LeftAligned "$Bold$FGWhite More options$Reset"
     
-    $continuous = Get-RegistryValue -Path $WU_UX -Name "IsContinuousInnovationOptedIn"
-    
-    Write-FlexLine -LeftIcon $Char_Speaker -LeftText "Get latest updates ASAP" -RightText "On" -IsActive ($continuous -eq 1) -ActiveColor $BGDarkGreen
-
     Write-Host ""
     Write-LeftAligned "$Bold$FGWhite$Char_Gear  Advanced options $Reset"
     
-    $mu = Get-RegistryValue -Path $WU_UX  -Name "AllowMUUpdateService"
+    $mu = Get-RegistryValue -Path $Global:RegPath_WU_UX  -Name "AllowMUUpdateService"
     Write-FlexLine -LeftIcon $Char_Loop -LeftText "Receive updates for other Microsoft products" -RightText "On" -IsActive ($mu -eq 1)
 
     # Added -Width 59 to shift the RightText one space to the left
-    $expedited = Get-RegistryValue -Path $WU_UX -Name "IsExpedited"
+    $expedited = Get-RegistryValue -Path $Global:RegPath_WU_UX -Name "IsExpedited"
     Write-FlexLine -LeftIcon $Char_FastForward -LeftText "Get me up to date: Restart ASAP" -RightText "On" -IsActive ($expedited -eq 1) -Width 59
 
-    $metered = Get-RegistryValue -Path $WU_UX -Name "AllowAutoWindowsUpdateDownloadOverMeteredNetwork"
+    $metered = Get-RegistryValue -Path $Global:RegPath_WU_UX -Name "AllowAutoWindowsUpdateDownloadOverMeteredNetwork"
     # Updated Icon: > becomes $Char_Timer (⏲)
     # Added leading space to LeftText to align 'D' in Download with 'G' in Get above
     Write-FlexLine -LeftIcon $Char_Timer -LeftText " Download updates over metered connections" -RightText "On" -IsActive ($metered -eq 1)
 
     # Moved here:
-    $restartNotify = Get-RegistryValue -Path $WU_UX -Name "RestartNotificationsAllowed2"
+    $restartNotify = Get-RegistryValue -Path $Global:RegPath_WU_UX -Name "RestartNotificationsAllowed2"
     Write-FlexLine -LeftIcon $Char_Bell -LeftText "Notify me when a restart is required" -RightText "On" -IsActive ($restartNotify -eq 1)
 
-    $ahs = Get-RegistryValue -Path $WU_UX -Name "ActiveHoursStart"
-    $ahe = Get-RegistryValue -Path $WU_UX -Name "ActiveHoursEnd"
+    $ahs = Get-RegistryValue -Path $Global:RegPath_WU_UX -Name "ActiveHoursStart"
+    $ahe = Get-RegistryValue -Path $Global:RegPath_WU_UX -Name "ActiveHoursEnd"
     
     $TimeText = "Auto"
     if ($ahs -ne $null -and $ahe -ne $null) {
@@ -151,14 +135,14 @@ function Show-WUStatus {
     Write-Host ""
     Write-LeftAligned "$Bold$FGWhite$Char_User Accounts >  Sign-in options$Reset"
     
-    $restartApps = Get-RegistryValue -Path $WINLOGON_USER -Name "RestartApps"
+    $restartApps = Get-RegistryValue -Path $Global:RegPath_Winlogon_User -Name "RestartApps"
     Write-FlexLine -LeftIcon ">" -LeftText "Automatically save restartable apps" -RightText "On" -IsActive ($restartApps -eq 1)
     
     $arsoEnabled = $false
     try {
         $UserSID = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
         if ($UserSID) {
-            $userArsoPath = "$WINLOGON_MACHINE\UserARSO\$UserSID"
+            $userArsoPath = "$Global:RegPath_Winlogon_Machine\UserARSO\$UserSID"
             $optOut = Get-RegistryValue -Path $userArsoPath -Name "OptOut"
             $arsoEnabled = ($optOut -ne $null -and $optOut -eq 0)
         }
@@ -168,40 +152,6 @@ function Show-WUStatus {
 
     Write-Host ""
     Write-Boundary $FGDarkGray
-}
-
-function Set-WUSettings {
-    try {
-        Write-Log -Message "Applying Windows Update configurations" -Level INFO
-        Set-RegistryDword -Path $WU_UX -Name "IsContinuousInnovationOptedIn" -Value 1
-        Set-RegistryDword -Path $WU_UX -Name "AllowMUUpdateService" -Value 1
-        Set-RegistryDword -Path $WU_UX -Name "IsExpedited" -Value 1
-        Set-RegistryDword -Path $WU_UX -Name "AllowAutoWindowsUpdateDownloadOverMeteredNetwork" -Value 1
-        Set-RegistryDword -Path $WU_UX -Name "RestartNotificationsAllowed2" -Value 1
-        
-        try {
-            Set-RegistryDword -Path $WINLOGON_USER -Name "RestartApps" -Value 1
-            $policyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-            $policyName = "DisableAutomaticRestartSignOn"
-            $policyValue = Get-RegistryValue -Path $policyPath -Name $policyName
-
-            if ($null -ne $policyValue -and $policyValue -eq 1) {
-                Write-Log -Message "ARSO blocked by policy" -Level WARNING
-            } else {
-                $UserSID = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-                if (-not $UserSID) { throw "Could not determine current user's SID." }
-                $userArsoPath = "$WINLOGON_MACHINE\UserARSO\$UserSID"
-                Set-RegistryDword -Path $WINLOGON_MACHINE -Name "ARSOUserConsent" -Value 1
-                if (-not (Test-Path $userArsoPath)) { New-Item -Path $userArsoPath -Force -ErrorAction Stop | Out-Null }
-                Set-RegistryDword -Path $userArsoPath -Name "OptOut" -Value 0
-            }
-        } catch {
-             Write-Log -Message "Failed to set user sign-in options: $($_.Exception.Message)" -Level ERROR
-        }
-    }
-    catch {
-        Write-Log -Message "Error applying settings: $($_.Exception.Message)" -Level ERROR
-    }
 }
 
 function Invoke-COMUpdateCheck {
@@ -401,11 +351,15 @@ function Invoke-WinUpdateCheck {
 
 # --- Main ---
 Write-Header "Windows Update SET & SCAN"
-Set-WUSettings
+Set-WUSettings -EnhancedSecurity:$EnhancedSecurity
 Show-WUStatus
 
 # --- User Prompt ---
 Invoke-COMUpdateCheck; Invoke-WingetUpdateCheck; Invoke-MSStoreUpdateCheck; Invoke-WinUpdateCheck; # Footer
+
+# Report
+Get-LogReport
+
 Write-Host ""
 Write-Boundary
 $FooterText = "$Char_Copyright 2026, www.AIIT.support. All Rights Reserved."
@@ -413,12 +367,3 @@ Write-Centered "$FGCyan$FooterText$Reset"
 
 # Exit Spacing
 Write-Host ""
-
-
-
-
-
-
-
-
-
