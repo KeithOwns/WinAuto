@@ -686,6 +686,39 @@ function Invoke-WA_SystemPreCheck {
     Invoke-AnimatedPause -Timeout 5
 }
 
+function Invoke-WA_InstallCppRedist {
+    Write-Header "INSTALL C++ REDIST"
+    $TempDir = "$env:TEMP\WinAuto_CppRedist"
+    if (-not (Test-Path $TempDir)) { New-Item -Path $TempDir -ItemType Directory -Force | Out-Null }
+
+    $Installers = @(
+        @{ Name = "Visual C++ 2015-2022 (x64)"; Url = "https://aka.ms/vs/17/release/vc_redist.x64.exe"; File = "$TempDir\vc_redist.x64.exe"; Args = "/install /quiet /norestart" },
+        @{ Name = "Visual C++ 2015-2022 (x86)"; Url = "https://aka.ms/vs/17/release/vc_redist.x86.exe"; File = "$TempDir\vc_redist.x86.exe"; Args = "/install /quiet /norestart" }
+    )
+
+    foreach ($app in $Installers) {
+        Write-LeftAligned "$FGGray Downloading $($app.Name)...$Reset"
+        try {
+            Invoke-WebRequest -Uri $app.Url -OutFile $app.File -ErrorAction Stop
+            Write-LeftAligned "$FGGray Installing $($app.Name)...$Reset"
+            $proc = Start-Process -FilePath $app.File -ArgumentList $app.Args -Wait -PassThru -NoNewWindow
+            
+            if ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq 3010) {
+                Write-LeftAligned "$FGGreen$Char_HeavyCheck Installed $($app.Name).$Reset"
+            } elseif ($proc.ExitCode -eq 1638) {
+                Write-LeftAligned "$FGGreen$Char_CheckMark Newer version already installed.$Reset"
+            } else {
+                Write-LeftAligned "$FGRed$Char_RedCross Failed (Exit: $($proc.ExitCode)).$Reset"
+            }
+        } catch {
+            Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset"
+        }
+    }
+    try { Remove-Item -Path $TempDir -Recurse -Force -ErrorAction SilentlyContinue } catch {}
+    Write-Host ""
+    Write-LeftAligned "$FGCyan Done.$Reset"
+}
+
 function Invoke-WA_WindowsUpdate {
     param([switch]$EnhancedSecurity)
     Write-Header "WINDOWS UPDATE SET & SCAN"
@@ -960,6 +993,8 @@ while ($true) {
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[E]${Reset} ${FGYellow}Enhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
     Write-Host ""
+    Write-LeftAligned " ${FGBlack}${BGYellow}[I]${Reset} ${FGGray}Install Applications${Reset}"
+    Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
     Write-Boundary
 
@@ -978,6 +1013,11 @@ while ($true) {
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
         continue
+    } elseif ($res.Character -eq 'I' -or $res.Character -eq 'i') {
+        Invoke-WA_InstallCppRedist
+        Write-Boundary
+        Write-Centered "Press any key to return..."
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {
         Clear-Host
         Write-Header "SYSTEM IMPACT MANIFEST"
