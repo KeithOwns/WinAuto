@@ -229,8 +229,10 @@ function Write-Footer {
     $FooterText = "$Char_Copyright 2026, www.AIIT.support. All Rights Reserved."
     $FooterPadding = [Math]::Floor((60 - $FooterText.Length) / 2)
     Write-Host (" " * $FooterPadding + $FooterText) -ForegroundColor Cyan
+    
+    # Standard Exit Spacing (User Preference)
+    Write-Host "`n`n`n`n`n"
 }
-
 function Write-FlexLine {
     param(
         [string]$LeftIcon,
