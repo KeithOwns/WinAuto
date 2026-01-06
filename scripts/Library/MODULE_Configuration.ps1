@@ -1,4 +1,4 @@
-﻿#Requires -RunAsAdministrator
+#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     WinAuto Module: Core Windows Configuration & Hardening
@@ -97,7 +97,37 @@ Write-LeftAligned "$Bold$FGCyan DEBLOAT & PRIVACY OPTIMIZATION $Reset"
 Write-Boundary $FGDarkCyan
 & "$PSScriptRoot\C3_WindowsDebloat_CLEAN.ps1" -AutoRun
 
-# 5. NETWORK & POWERSHELL SECURITY
+# 5. HIDE LOCAL ADMINISTRATOR ACCOUNTS (Default - runs before network/security)
+Write-Host ""
+Write-LeftAligned "$Bold$FGCyan HIDING LOCAL ADMINISTRATOR ACCOUNTS $Reset"
+Write-Boundary $FGDarkCyan
+
+try {
+    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
+    
+    if (-not (Test-Path $regPath)) {
+        New-Item -Path $regPath -Force | Out-Null
+        Write-LeftAligned "$FGGreen$Char_CheckMark Created registry path for user list.$Reset"
+    }
+    
+    # Hide Administrator account
+    Set-ItemProperty -Path $regPath -Name "Administrator" -Value 0 -Type DWord -Force
+    Write-LeftAligned "$FGGreen$Char_CheckMark Administrator account hidden from login screen.$Reset"
+    
+    # Hide admin account (if it exists)
+    $adminUser = Get-LocalUser -Name "admin" -ErrorAction SilentlyContinue
+    if ($adminUser) {
+        Set-ItemProperty -Path $regPath -Name "admin" -Value 0 -Type DWord -Force
+        Write-LeftAligned "$FGGreen$Char_CheckMark admin account hidden from login screen.$Reset"
+    } else {
+        Write-LeftAligned "$FGDarkGray$Char_Info admin account not found, skipping.$Reset"
+    }
+    
+} catch {
+    Write-LeftAligned "$FGRed$Char_Warn Failed to hide admin accounts: $_$Reset"
+}
+
+# 6. NETWORK & POWERSHELL SECURITY
 if ($EnhancedSecurity) {
     Write-Host ""
     Write-LeftAligned "$Bold$FGCyan ENHANCED NETWORK & POWERSHELL SECURITY $Reset"
@@ -110,6 +140,34 @@ if ($EnhancedSecurity) {
     Write-Boundary $FGDarkCyan
     & "$PSScriptRoot\C4_Network_FIXnSECURE.ps1" -AutoRun -Undo
 }
+Write-Host ""
+Write-LeftAligned "$Bold$FGCyan HIDING LOCAL ADMINISTRATOR ACCOUNTS $Reset"
+Write-Boundary $FGDarkCyan
+
+try {
+    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
+    
+    if (-not (Test-Path $regPath)) {
+        New-Item -Path $regPath -Force | Out-Null
+        Write-LeftAligned "$FGGreen$Char_CheckMark Created registry path for user list.$Reset"
+    }
+    
+    # Hide Administrator account
+    Set-ItemProperty -Path $regPath -Name "Administrator" -Value 0 -Type DWord -Force
+    Write-LeftAligned "$FGGreen$Char_CheckMark Administrator account hidden from login screen.$Reset"
+    
+    # Hide admin account (if it exists)
+    $adminUser = Get-LocalUser -Name "admin" -ErrorAction SilentlyContinue
+    if ($adminUser) {
+        Set-ItemProperty -Path $regPath -Name "admin" -Value 0 -Type DWord -Force
+        Write-LeftAligned "$FGGreen$Char_CheckMark admin account hidden from login screen.$Reset"
+    } else {
+        Write-LeftAligned "$FGDarkGray$Char_Info admin account not found, skipping.$Reset"
+    }
+    
+} catch {
+    Write-LeftAligned "$FGRed$Char_Warn Failed to hide admin accounts: $_$Reset"
+}
 
 Write-Boundary
 
@@ -121,4 +179,3 @@ Write-Footer
 
 
 try { if ($null -ne (Get-Variable -Name "Transcript" -ErrorAction SilentlyContinue)) { Stop-Transcript | Out-Null } } catch {}
-
