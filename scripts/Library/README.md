@@ -13,8 +13,7 @@ All scripts in this library follow the **WinAuto Visual Standards**:
 ### Security Configuration (SET)
 Standardized security hardening modules.
 - **SET_EnableRealTimeProtection-WinAuto.ps1**: Toggles Defender Real-time monitoring.
-- **SET_EnablePUA-WinAuto.ps1**: Configures Potentially Unwanted App blocking (GPO level).
-- **SET_EnablePUAapps-WinAuto.ps1**: Toggles PUA blocking via Defender cmdlet.
+- **SET_EnablePUA-WinAuto.ps1**: Configures Potentially Unwanted App blocking (System & Edge).
 - **SET_EnableMemoryIntegrity-WinAuto.ps1**: Manages Core Isolation (HVCI).
 - **SET_EnableLSA-WinAuto.ps1**: Manages Local Security Authority protection.
 - **SET_EnableKernelStackProtection-WinAuto.ps1**: Manages Hardware-enforced Stack Protection.
