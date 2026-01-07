@@ -1,15 +1,18 @@
-﻿#Requires -RunAsAdministrator
+#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Enables or Disables Potentially Unwanted App (PUA) Blocking.
+    Enables or Disables Potentially Unwanted App (PUA) blocking.
 .DESCRIPTION
-    Standardized for WinAuto. Configures Defender PUA protection.
+    Standardized for WinAuto. Configures:
+    1. Windows Defender PUA Protection (System-wide)
+    2. Edge SmartScreen PUA Protection (User-specific 'Block downloads')
 .PARAMETER Undo
-    Reverses the setting (Disables PUA Protection).
+    Reverses the setting (Disables PUA blocking).
 #>
 
 param(
-    [switch]$Undo
+    [switch]$Undo,
+    [switch]$Force
 )
 
 # --- SHARED FUNCTIONS ---
@@ -18,21 +21,33 @@ param(
 Write-Header "PUA PROTECTION"
 
 # --- MAIN ---
-$statusText = if ($Undo) { "DISABLED" } else { "ENABLED" }
-$targetValue = if ($Undo) { 0 } else { 1 }
 
 try {
-    Set-MpPreference -PUAProtection $targetValue -ErrorAction Stop
+    $targetMp = if ($Undo) { 0 } else { 1 }
+    $targetEdge = if ($Undo) { 0 } else { 1 }
+    $statusText = if ($Undo) { "DISABLED" } else { "ENABLED" }
 
-    # Verify
-    $current = (Get-MpPreference).PUAProtection
-    if ($current -eq $targetValue) {
-        Write-LeftAligned "$FGGreen$Char_BallotCheck  PUA Protection is $statusText.$Reset"
-    } else {
-        Write-LeftAligned "$FGRed$Char_RedCross  PUA Protection $statusText failed.$Reset"
+    # 1. System-wide Defender PUA
+    Set-MpPreference -PUAProtection $targetMp -ErrorAction Stop
+    Write-LeftAligned "$FGGreen$Char_HeavyCheck  Defender PUA Blocking is $statusText.$Reset"
+
+    # 2. User-specific Edge SmartScreen PUA (Block downloads)
+    $edgeKeyPath = "HKCU:\Software\Microsoft\Edge\SmartScreenPuaEnabled"
+    if (!(Test-Path $edgeKeyPath)) {
+        New-Item -Path $edgeKeyPath -Force | Out-Null
+    }
+    Set-ItemProperty -Path $edgeKeyPath -Name "(default)" -Value $targetEdge -Type DWord -Force
+    Write-LeftAligned "$FGGreen$Char_HeavyCheck  Edge 'Block downloads' is $statusText.$Reset"
+
+    # Verification
+    $currentMp = (Get-MpPreference).PUAProtection
+    # Defender PUA: 0=Disabled, 1=Enabled, 2=Audit
+    $matchMp = ($currentMp -eq $targetMp)
+    
+    if (-not $matchMp) {
+        Write-LeftAligned "$FGDarkYellow$Char_Warn Verification failed for Defender PUA. Status: $currentMp$Reset"
     }
 
 } catch {
     Write-LeftAligned "$FGRed$Char_RedCross  Failed: $($_.Exception.Message)$Reset"
 }
-
