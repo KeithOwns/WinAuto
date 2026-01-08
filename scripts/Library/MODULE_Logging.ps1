@@ -143,9 +143,11 @@ function Get-LogReport {
 
     $Content = @(Get-Content -Path $Global:WinAutoLogPath)
     $TotalLines = $Content.Count
-    $Errors = @($Content | Select-String "\[ERROR\]").Count
-    $Warnings = @($Content | Select-String "\[WARNING\]").Count
-    $Successes = @($Content | Select-String "\[SUCCESS\]").Count
+    
+    # Count strict log tags AND visual indicators captured by transcript
+    $Errors    = @($Content | Select-String -Pattern "\[ERROR\]|✖|❌").Count
+    $Warnings  = @($Content | Select-String -Pattern "\[WARNING\]|⚠|!").Count
+    $Successes = @($Content | Select-String -Pattern "\[SUCCESS\]|✅|✔|☑").Count
     
     Write-Host ""
     Write-Boundary

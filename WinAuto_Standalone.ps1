@@ -1,4 +1,4 @@
-﻿#Requires -RunAsAdministrator
+#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     WinAuto Standalone Edition
@@ -16,7 +16,7 @@ Set-StrictMode -Version Latest
 $Global:EnhancedSecurity = $false
 
 # --- MANIFEST CONTENT ---
-$Global:WinAutoManifestContent = @"
+$Global:WinAutoManifestContent = @'
 # WinAuto System Impact Manifest
 
 This document details the specific technical changes that the **WinAuto** suite makes to your Windows 11 system.
@@ -28,7 +28,7 @@ This document details the specific technical changes that the **WinAuto** suite 
 | Feature | Change | Technical Action |
 | :--- | :--- | :--- |
 | **Real-Time Protection** | **Enabled** | `Set-MpPreference -DisableRealtimeMonitoring $false` |
-| **PUA Protection** | **Enabled** | `Set-MpPreference -PUAProtection Enabled` |
+| **PUA Protection** | **Enabled** | `Set-MpPreference -PUAProtection Enabled` & Edge 'Block downloads' |
 | **Core Isolation** | **Enabled** | Registry: `HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity` -> `Enabled = 1` |
 | **LSA Protection** | **Enabled** | Registry: `HKLM\SYSTEM\CurrentControlSet\Control\Lsa` -> `RunAsPPL = 1` |
 | **Stack Protection** | **Enabled** | Registry: `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Kernel` -> `KernelSEHOPEnabled = 1` |
@@ -37,6 +37,7 @@ This document details the specific technical changes that the **WinAuto** suite 
 | **Phishing Protection** | **Enabled** | `Set-MpPreference -EnablePhishingProtection Enabled` |
 | **Firewall** | **Enabled** | `Set-NetFirewallProfile -Enabled True` (Domain, Private, Public) |
 | **PowerShell Sec** | **Logging ON** | Script Block, Module, & Transcription Logging (Group Policy/Registry) |
+| **Admin Accounts** | **Hidden** | Registry: `HKLM\...\Winlogon\SpecialAccounts\UserList` -> `Administrator/admin = 0` |
 
 ---
 
@@ -79,8 +80,8 @@ This document details the specific technical changes that the **WinAuto** suite 
 | **Animations** | **Disabled** | Registry: `HKCU\...\Explorer\Advanced` -> `TaskbarAnimations = 0` |
 
 ---
-Â© 2026, www.AIIT.support. All Rights Reserved.
-"@
+© 2026, www.AIIT.support. All Rights Reserved.
+'@
 
 # --- GLOBAL RESOURCES ---
 # Centralized definition of ANSI colors and Unicode characters.
@@ -253,20 +254,7 @@ Test-IsWindows11
 function Set-ConsoleSnapRight {
     param([int]$Columns = 64)
     try {
-        $code = @"
-        using System;
-        using System.Runtime.InteropServices;
-        namespace WinAutoNative {
-            [StructLayout(LayoutKind.Sequential)] 
-            public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
-            public class ConsoleUtils {
-                [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
-                [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
-                [DllImport("user32.dll")] public static extern int GetSystemMetrics(int nIndex);
-                [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-            }
-        }
-"@
+        $code = 'using System; using System.Runtime.InteropServices; namespace WinAutoNative { [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left; public int Top; public int Right; public int Bottom; } public class ConsoleUtils { [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow(); [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint); [DllImport("user32.dll")] public static extern int GetSystemMetrics(int nIndex); [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect); } }'
         if (-not ([System.Management.Automation.PSTypeName]"WinAutoNative.ConsoleUtils").Type) {
             Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue
         }
@@ -298,11 +286,8 @@ function Set-ConsoleSnapRight {
 
 function Disable-QuickEdit {
     try {
-        $kernel32 = Add-Type -MemberDefinition @"
-        [DllImport("kernel32.dll")] public static extern IntPtr GetStdHandle(int nStdHandle);
-        [DllImport("kernel32.dll")] public static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
-        [DllImport("kernel32.dll")] public static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
-"@ -Name "Kernel32" -Namespace Win32 -PassThru
+        $def = '[DllImport("kernel32.dll")] public static extern IntPtr GetStdHandle(int nStdHandle); [DllImport("kernel32.dll")] public static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode); [DllImport("kernel32.dll")] public static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);'
+        $kernel32 = Add-Type -MemberDefinition $def -Name "Kernel32" -Namespace Win32 -PassThru
         $handle = $kernel32::GetStdHandle(-10)
         $mode = 0
         if ($kernel32::GetConsoleMode($handle, [ref]$mode)) {
@@ -388,6 +373,26 @@ function Write-Log {
     if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     Add-Content -Path $Path -Value "[$timestamp] [$Level] $Message" -ErrorAction SilentlyContinue
+}
+
+function Get-LogReport {
+    param([string]$Path = $Global:WinAutoLogPath)
+    if (-not $Path -or -not (Test-Path $Path)) { return }
+    $Content = @(Get-Content -Path $Path)
+    # Count visual indicators and text tags
+    $Errors    = @($Content | Select-String -Pattern "\[ERROR\]|✖|❌").Count
+    $Warnings  = @($Content | Select-String -Pattern "\[WARNING\]|⚠|!").Count
+    $Successes = @($Content | Select-String -Pattern "\[SUCCESS\]|✅|✔|☑").Count
+    Write-Host ""
+    Write-Boundary
+    Write-Centered "SESSION REPORT"
+    Write-Boundary
+    Write-LeftAligned "Log File: $Path"
+    Write-Host ""
+    Write-LeftAligned "Successes     : $Successes"
+    Write-LeftAligned "Warnings      : $Warnings"
+    Write-LeftAligned "Errors        : $Errors"
+    Write-Boundary
 }
 
 function Get-WinAutoLastRun {
@@ -500,6 +505,50 @@ function Invoke-WA_HardenNetwork {
     } catch { Write-LeftAligned "$FGRed$Char_RedCross DNS Configuration failed.$Reset" }
 }
 
+function Invoke-WA_SetPowerShellSecurity {
+    Write-Header "POWERSHELL SECURITY"
+    $base = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell"
+    try {
+        # Turn on Transcription
+        Set-RegistryDword -Path "$base\Transcription" -Name "EnableTranscripting" -Value 1
+        Set-RegistryDword -Path "$base\Transcription" -Name "EnableInvocationHeader" -Value 1
+        
+        # Turn on Module Logging
+        Set-RegistryDword -Path "$base\ModuleLogging" -Name "EnableModuleLogging" -Value 1
+        
+        # Turn on Script Block Logging
+        Set-RegistryDword -Path "$base\ScriptBlockLogging" -Name "EnableScriptBlockLogging" -Value 1
+        
+        Write-LeftAligned "$FGGreen$Char_CheckMark PowerShell Auditing & Logging Enabled.$Reset"
+    } catch {
+        Write-LeftAligned "$FGRed$Char_Warn Failed to set PowerShell security: $($_.Exception.Message)$Reset"
+    }
+}
+
+function Invoke-WA_HideAdminAccounts {
+    Write-Header "HIDING LOCAL ADMINISTRATOR ACCOUNTS"
+    try {
+        $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
+        if (-not (Test-Path $regPath)) {
+            New-Item -Path $regPath -Force | Out-Null
+            Write-LeftAligned "$FGGreen$Char_CheckMark Created registry path for user list.$Reset"
+        }
+        
+        # Hide Administrator
+        Set-RegistryDword -Path $regPath -Name "Administrator" -Value 0
+        Write-LeftAligned "$FGGreen$Char_CheckMark Administrator account hidden from login screen.$Reset"
+        
+        # Hide admin (if exists)
+        $adminUser = Get-LocalUser -Name "admin" -ErrorAction SilentlyContinue
+        if ($adminUser) {
+            Set-RegistryDword -Path $regPath -Name "admin" -Value 0
+            Write-LeftAligned "$FGGreen$Char_CheckMark admin account hidden from login screen.$Reset"
+        }
+    } catch {
+        Write-LeftAligned "$FGRed$Char_Warn Failed to hide admin accounts: $($_.Exception.Message)$Reset"
+    }
+}
+
 function Invoke-WA_DebloatUI {
     Write-Header "ENHANCED DEBLOAT & UI"
 
@@ -562,8 +611,15 @@ function Invoke-WA_SetPUA {
     Write-Header "PUA PROTECTION"
     try {
         $target = if ($Undo) { 0 } else { 1 }
+        $statusText = if ($Undo) { "DISABLED" } else { "ENABLED" }
+
+        # 1. Defender PUA
         Set-MpPreference -PUAProtection $target -ErrorAction Stop
-        Write-LeftAligned "$FGGreen$Char_BallotCheck  PUA Protection is configured.$Reset"
+        Write-LeftAligned "$FGGreen$Char_HeavyCheck  Defender PUA Blocking is $statusText.$Reset"
+
+        # 2. Edge PUA
+        Set-RegistryDword -Path "HKCU:\Software\Microsoft\Edge\SmartScreenPuaEnabled" -Name "(default)" -Value $target
+        Write-LeftAligned "$FGGreen$Char_HeavyCheck  Edge 'Block downloads' is $statusText.$Reset"
     } catch { Write-LeftAligned "$FGRed$Char_RedCross  Failed: $($_.Exception.Message)$Reset" }
 }
 
@@ -919,9 +975,13 @@ function Invoke-WinAutoConfiguration {
     Invoke-WA_SetPhishingMalicious
     Invoke-WA_SetFirewall
     Invoke-WA_SetVisualFX
+    
+    # New Standard Config
+    Invoke-WA_HideAdminAccounts
 
     if ($EnhancedSecurity) {
         Invoke-WA_HardenNetwork
+        Invoke-WA_SetPowerShellSecurity
         Invoke-WA_DebloatUI
     }
 
@@ -1033,9 +1093,9 @@ while ($true) {
     }
 }
 
+Get-LogReport
 Write-Host ""
 Write-Boundary
 Write-Centered "$FGGreen ALL REQUESTED TASKS COMPLETE $Reset"
 Write-Footer
 Write-Host ""
-

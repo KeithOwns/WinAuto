@@ -88,6 +88,13 @@ Each script in `scripts\Library` is standalone and can be executed independently
 .\scripts\Library\C2_WindowsSecurity_CHECKnSETnSCAN.ps1
 ```
 
+## 📦 Standalone Version
+For single-file execution or easy transfer, use `WinAuto_Standalone.ps1`.
+1. Open the file in a text editor.
+2. Select All (Ctrl+A) and Copy (Ctrl+C).
+3. Paste directly into an Administrator PowerShell window.
+4. The full suite will run immediately.
+
 ---
 
 ## 👨‍💻 Author
