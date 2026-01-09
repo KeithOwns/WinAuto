@@ -13,9 +13,9 @@ $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
 
 function Write-Line { 
-    param($Label, $Value, $Color="White") 
+    param($Label, $Value, $Color=$FGWhite) 
     Write-Host "  $Label " -NoNewline
-    Write-Host $Value -ForegroundColor $Color 
+    Write-Host "$Color$Value$Reset"
 }
 
 # --- CHECKS ---
@@ -32,9 +32,9 @@ Write-Line "Version:" "$($os.Version) (Build $($os.BuildNumber))"
 $uptime = (Get-Date) - $os.LastBootUpTime
 $uptimeStr = "{0} days, {1} hours, {2} minutes" -f $uptime.Days, $uptime.Hours, $uptime.Minutes
 
-$uptimeColor = "Green"
-if ($uptime.Days -gt 7) { $uptimeColor = "Red" }
-elseif ($uptime.Days -gt 3) { $uptimeColor = "Yellow" }
+$uptimeColor = $FGGreen
+if ($uptime.Days -gt 7) { $uptimeColor = $FGRed }
+elseif ($uptime.Days -gt 3) { $uptimeColor = $FGYellow }
 
 Write-LeftAligned "$FGWhite System Uptime$Reset"
 Write-Line "Uptime:" $uptimeStr $uptimeColor
@@ -49,9 +49,9 @@ $freeGB = [math]::Round($drive.SizeRemaining / 1GB, 2)
 $totalGB = [math]::Round($drive.Size / 1GB, 2)
 $pctFree = [math]::Round(($drive.SizeRemaining / $drive.Size) * 100, 1)
 
-$diskColor = "Green"
-if ($freeGB -lt 10) { $diskColor = "Red" }
-elseif ($freeGB -lt 20) { $diskColor = "Yellow" }
+$diskColor = $FGGreen
+if ($freeGB -lt 10) { $diskColor = $FGRed }
+elseif ($freeGB -lt 20) { $diskColor = $FGYellow }
 
 Write-LeftAligned "$FGWhite Disk Space (C:)$Reset"
 Write-Line "Free Space:" "$freeGB GB ($pctFree%) of $totalGB GB" $diskColor
@@ -68,11 +68,11 @@ try {
     $critCount = ($errors | Where-Object { $_.EntryType -eq 'Error' }).Count
     $warnCount = ($errors | Where-Object { $_.EntryType -eq 'Warning' }).Count
     
-    $cColor = "Green"
-    if ($critCount -gt 0) { $cColor = "Red" }
+    $cColor = $FGGreen
+    if ($critCount -gt 0) { $cColor = $FGRed }
     
-    $wColor = "Green"
-    if ($warnCount -gt 0) { $wColor = "Yellow" }
+    $wColor = $FGGreen
+    if ($warnCount -gt 0) { $wColor = $FGYellow }
     
     Write-Line "System Errors:" "$critCount" $cColor
     Write-Line "Warnings:" "$warnCount" $wColor

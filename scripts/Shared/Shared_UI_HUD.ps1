@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Displays a persistent header with system statistics.
     

@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 param([switch]$AutoRun, [switch]$EnhancedSecurity)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -28,7 +28,7 @@ function Get-RegistryValue {
 function Show-WUStatus {
     Write-Boundary $FGDarkGray
 
-    Write-Host " $Bold$FGWhite Windows Update$Reset"
+    Write-Host " $Bold$FGCyan Windows Update$Reset"
     
     $status_WindowsUpdate = "Updates available"
     $status_Color = $FGDarkMagenta
@@ -92,10 +92,10 @@ function Show-WUStatus {
     Write-Log -Message "Starting Windows Update status check" -Level INFO
 
     Write-Host ""
-    Write-LeftAligned "$Bold$FGWhite More options$Reset"
+    Write-LeftAligned "$Bold$FGCyan More options$Reset"
     
     Write-Host ""
-    Write-LeftAligned "$Bold$FGWhite$Char_Gear  Advanced options $Reset"
+    Write-LeftAligned "$Bold$FGCyan$Char_Gear  Advanced options $Reset"
     
     $mu = Get-RegistryValue -Path $Global:RegPath_WU_UX  -Name "AllowMUUpdateService"
     Write-FlexLine -LeftIcon $Char_Loop -LeftText "Receive updates for other Microsoft products" -RightText "On" -IsActive ($mu -eq 1)
@@ -133,7 +133,7 @@ function Show-WUStatus {
     Write-Host "$Reset$TimeText$Reset"
     
     Write-Host ""
-    Write-LeftAligned "$Bold$FGWhite$Char_User Accounts >  Sign-in options$Reset"
+    Write-LeftAligned "$Bold$FGCyan$Char_User Accounts >  Sign-in options$Reset"
     
     $restartApps = Get-RegistryValue -Path $Global:RegPath_Winlogon_User -Name "RestartApps"
     Write-FlexLine -LeftIcon ">" -LeftText "Automatically save restartable apps" -RightText "On" -IsActive ($restartApps -eq 1)

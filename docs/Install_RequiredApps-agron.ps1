@@ -1,4 +1,4 @@
-# file: Install-RequiredApps.ps1
+﻿# file: Install-RequiredApps.ps1
 param(
     [ValidateSet('Desktop','Laptop','Auto')]
     [string]$DeviceType = 'Auto'

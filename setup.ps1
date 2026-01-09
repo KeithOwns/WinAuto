@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     WinAuto One-Liner Bootstrapper
 .DESCRIPTION

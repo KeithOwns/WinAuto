@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     WinAuto Module: Core Windows Configuration & Hardening
@@ -40,6 +40,10 @@ $av = Get-ThirdPartyAV
 $tp = Test-TamperProtection
 
 # 1. SECURITY HARDENING
+if ($null -eq $av) {
+    & "$PSScriptRoot\SET_Enable-VirusThreatProtection.ps1"
+}
+
 $secScripts = @(
     "SET_EnableRealTimeProtection-WinAuto.ps1",
     "SET_EnablePUA-WinAuto.ps1",
