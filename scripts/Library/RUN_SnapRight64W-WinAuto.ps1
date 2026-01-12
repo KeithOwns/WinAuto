@@ -51,14 +51,17 @@ try {
     $Host.UI.RawUI.BufferSize = $buffer
 
     $hWnd = [WinAuto.WinUtils]::GetConsoleWindow()
-    $screenW = [WinAuto.WinUtils]::GetSystemMetrics(16)
-    $screenH = [WinAuto.WinUtils]::GetSystemMetrics(17)
+    $screenW = [WinAuto.WinUtils]::GetSystemMetrics(0) # SM_CXSCREEN
+    $screenH = [WinAuto.WinUtils]::GetSystemMetrics(1) # SM_CYSCREEN
 
-    $rect = New-Object WinAuto.RECT
-    $null = [WinAuto.WinUtils]::GetWindowRect($hWnd, [ref]$rect)
-    $winPixelW = $rect.Right - $rect.Left
+    $targetW = [Math]::Floor($screenW / 3)
+    $targetX = $screenW - $targetW
+
+    # We need to respect the console font/buffer width if possible, but MoveWindow sets the pixel size.
+    # The original script prioritized 64 columns text width. 
+    # If we want to strictly follow "Right Third", we should set pixel width to targetW.
     
-    $null = [WinAuto.WinUtils]::MoveWindow($hWnd, ($screenW - $winPixelW), 0, $winPixelW, $screenH, $true)
+    $null = [WinAuto.WinUtils]::MoveWindow($hWnd, $targetX, 0, $targetW, $screenH, $true)
 
     Write-LeftAligned "$FGGreen$Char_HeavyCheck Success! Console resized and snapped.$Reset"
 

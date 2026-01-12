@@ -27,3 +27,10 @@ UI--
    * Show File Extensions: Configures Explorer to always show file extensions (e.g., .txt, .exe) for known file types.
    * Show Hidden Files: Enables the visibility of hidden files, folders, and drives.
    * Note: These are part of the `Configure-Explorer` logic in the Debloat/UI phase.
+
+Script Variations & Customization--
+  1. Proposed Custom Scripts
+   * WinAutoSECURE.ps1: A specialized version that enables ALL enhanced security features by default (Maximum Hardening).
+   * WinAutoCUSTOM.ps1: A user-generated script created via a 'Script Customizer' tool, allowing granular selection of features.
+  2. Optional Features for Customization
+   * Dev Drive Protection: Enable 'Performance Mode' for Dev Drives (Async scanning). Ideal for software developers but not enabled by default.

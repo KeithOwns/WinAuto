@@ -1,10 +1,10 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Enables 'Virus & threat protection' in Windows Security via UI Automation.
+    Enables 'Firewall & network protection' in Windows Security via UI Automation.
 .DESCRIPTION
     Launches Windows Security and attempts to click the 'Turn on' button
-    associated with 'Virus & threat protection'.
+    associated with 'Firewall & network protection'.
 #>
 
 Set-StrictMode -Version Latest
@@ -76,7 +76,7 @@ function Invoke-UIAButton {
 
 # --- MAIN SCRIPT ---
 
-Write-Log "Starting Windows Security Automation..." "Cyan"
+Write-Log "Starting Windows Security Automation (Firewall)..." "Cyan"
 
 $MaxRetries = 20
 $RetryCount = 0
@@ -114,11 +114,11 @@ while ($KeepLooping -and ($RetryCount -lt $MaxRetries)) {
     }
 
     # 4. Search for Section
-    Write-Log "Searching for 'Virus & threat protection' section..." "Gray"
-    $Section = Get-UIAElement -Parent $Window -Name "Virus & threat protection" -Scope "Descendants" -TimeoutSeconds 5
+    Write-Log "Searching for 'Firewall & network protection' section..." "Gray"
+    $Section = Get-UIAElement -Parent $Window -Name "Firewall & network protection" -Scope "Descendants" -TimeoutSeconds 5
 
     if ($Section) {
-        Write-Log "Found 'Virus & threat protection' section." "Green"
+        Write-Log "Found 'Firewall & network protection' section." "Green"
         
         # 5. Look for 'Turn on' button
         Write-Log "Looking for 'Turn on' button..." "Gray"
@@ -134,7 +134,7 @@ while ($KeepLooping -and ($RetryCount -lt $MaxRetries)) {
             if (Invoke-UIAButton -Button $TurnOnBtn) {
                 Write-Log "Successfully clicked 'Turn on'. Restarting app..." "Green"
                 $KeepLooping = $true
-                Start-Sleep -Seconds 2
+                Start-Sleep -Seconds 5
                 # Process will be killed at start of next iteration
             } else {
                 Write-Log "Failed to click 'Turn on'." "Red"
@@ -144,8 +144,21 @@ while ($KeepLooping -and ($RetryCount -lt $MaxRetries)) {
         }
 
     } else {
-        Write-Log "Could not find 'Virus & threat protection' section." "Red"
+        Write-Log "Could not find 'Firewall & network protection' section." "Red"
     }
 }
 
 Write-Log "Automation complete." "Cyan"
+
+# --- FOOTER ---
+# Use resources if available, otherwise plain text
+if (Get-Variable -Name "Char_Copyright" -ErrorAction SilentlyContinue) {
+    Write-Host ""
+    $Pad = [Math]::Max(0, [Math]::Floor((60 - 45) / 2))
+    Write-Host (" " * $Pad + "${FGCyan}$Char_Copyright 2026, www.AIIT.support. All Rights Reserved.${Reset}")
+    Write-Host ""
+} else {
+    Write-Host ""
+    Write-Host "  (c) 2026, www.AIIT.support. All Rights Reserved." -ForegroundColor Cyan
+    Write-Host ""
+}

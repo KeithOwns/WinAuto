@@ -51,19 +51,19 @@ while ($utilsRunning) {
     $selection = if ($keyInput.VirtualKeyCode -eq 13) { "" } else { $keyInput.Character.ToString().ToUpper() }
 
     switch ($selection) {
-        '1' { & "$PSScriptRoot\CHECK_System_INVENTORY.ps1"; Invoke-AnimatedPause -ActionText "RETURN" }
-        '2' { & "$PSScriptRoot\CHECK_Check_BatteryHealth.ps1"; Invoke-AnimatedPause -ActionText "RETURN" }
-        '3' { & "$PSScriptRoot\CHECK_Check_BSOD.ps1"; Invoke-AnimatedPause -ActionText "RETURN" }
-        '4' { & "$PSScriptRoot\SET_User_MANAGER.ps1" }
-        '5' { & "$PSScriptRoot\SET_Manage_Startup.ps1" }
-        '6' { & "$PSScriptRoot\RUN_Bulk_Uninstaller.ps1" }
-        '7' { & "$PSScriptRoot\SET_Integration_ContextMenu.ps1" }
-        '8' { & "$PSScriptRoot\SET_Setup_Notifications.ps1" }
-        '9' { & "$PSScriptRoot\RUN_Toolbox_QUICKFIX.ps1" }
-        'U' { & "$PSScriptRoot\RUN_Update_Suite.ps1" }
-        'P' { & "$PSScriptRoot\RUN_Pack_Portable.ps1" }
-        'R' { & "$PSScriptRoot\RUN_Remote_EXECUTE.ps1" }
-        'X' { & "$PSScriptRoot\RUN_Suite_CLEANUP.ps1" }
+    '1' { & "$PSScriptRoot\CHECK_SystemInventory-WinAuto.ps1"; Invoke-AnimatedPause -ActionText "RETURN" }
+    '2' { & "$PSScriptRoot\CHECK_BatteryHealth-WinAuto.ps1"; Invoke-AnimatedPause -ActionText "RETURN" }
+    '3' { & "$PSScriptRoot\CHECK_BSOD-WinAuto.ps1"; Invoke-AnimatedPause -ActionText "RETURN" }
+    '4' { & "$PSScriptRoot\SET_UserManager-WinAuto.ps1" }
+    '5' { & "$PSScriptRoot\SET_ManageStartup-WinAuto.ps1" }
+    '6' { & "$PSScriptRoot\RUN_BulkUninstaller-WinAuto.ps1" }
+    '7' { & "$PSScriptRoot\SET_IntegrationContextMenu-WinAuto.ps1" }
+    '8' { & "$PSScriptRoot\SET_SetupNotifications-WinAuto.ps1" }
+    
+    'U' { & "$PSScriptRoot\RUN_UpdateSuite-WinAuto.ps1" }
+    'P' { & "$PSScriptRoot\RUN_PackPortable-WinAuto.ps1" }
+    'R' { & "$PSScriptRoot\RUN_RemoteExecute-WinAuto.ps1" }
+    'X' { & "$PSScriptRoot\RUN_SuiteCleanup-WinAuto.ps1" }
         Default { $utilsRunning = $false }
     }
 }

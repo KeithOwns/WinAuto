@@ -274,16 +274,13 @@ function Set-ConsoleSnapRight {
         }
         $window.Height = $targetHeight
         $Host.UI.RawUI.WindowSize = $window
-        # 3. Position Adjustment
         $hWnd = [WinAutoNative.ConsoleUtils]::GetConsoleWindow()
-        $screenW = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(0) # SM_CXSCREEN
-        $screenH = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(1) # SM_CYSCREEN
-        
-        $targetW = [Math]::Floor($screenW / 3)
-        $targetX = $screenW - $targetW
-        
-        # Snap to Right Third
-        [WinAutoNative.ConsoleUtils]::MoveWindow($hWnd, $targetX, 0, $targetW, $screenH, $true) | Out-Null
+        $screenW = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(16)
+        $screenH = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(17)
+        $rect = New-Object WinAutoNative.RECT
+        [WinAutoNative.ConsoleUtils]::GetWindowRect($hWnd, [ref]$rect)
+        $winW = $rect.Right - $rect.Left
+        [WinAutoNative.ConsoleUtils]::MoveWindow($hWnd, ($screenW - $winW), 0, $winW, $screenH, $true) | Out-Null
     } catch {}
 }
 
@@ -487,11 +484,6 @@ function Wait-KeyPressWithTimeout {
 function Invoke-AnimatedPause {
     param([string]$ActionText = "CONTINUE", [int]$Timeout = 10)
     Write-Host ""; $PromptCursorTop = [Console]::CursorTop
-    if ($Timeout -le 0) {
-        $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGYellow}ENTER${FGWhite} to ${FGYellow}$ActionText${FGWhite} | or any other key to SKIP$Char_Skip${Reset}"
-        Write-Centered $PromptStr
-        return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    }
     $LocalTick = { param($Elapsed) & $Global:TickAction -ElapsedTimespan $Elapsed -ActionText $ActionText -Timeout $Timeout -PromptCursorTop $PromptCursorTop }
     $res = Wait-KeyPressWithTimeout -Seconds $Timeout -OnTick $LocalTick; Write-Host ""; return $res
 }
@@ -1174,9 +1166,7 @@ while ($true) {
 
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
-    if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
     Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
-    if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Updates, Cleanup, Repair, Optimization${Reset}" }
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Smart Run${FGGray} (Recommended)${Reset}"
     Write-Host ""
@@ -1184,20 +1174,21 @@ while ($true) {
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[I]${Reset} ${FGGray}Install Applications${Reset}"
     Write-Host ""
-    $DetailText = if ($Global:ShowDetails) { "Collapse Details" } else { "Expand Details" }
-    Write-LeftAligned " ${FGBlack}${BGYellow}[Space]${Reset} ${FGGray}$DetailText${Reset}"
     Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
     Write-Boundary
 
-    $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 0
+    $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 10
 
     if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'A' -or $res.Character -eq 'a') {
         Invoke-WinAutoConfiguration -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         Invoke-WinAutoMaintenance -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
+        break
     } elseif ($res.Character -eq '1') {
         Invoke-WinAutoConfiguration -EnhancedSecurity:$Global:EnhancedSecurity
+        break
     } elseif ($res.Character -eq '2') {
         Invoke-WinAutoMaintenance -EnhancedSecurity:$Global:EnhancedSecurity
+        break
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
         continue
@@ -1216,7 +1207,7 @@ while ($true) {
     } else {
         Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
         Start-Sleep -Seconds 1
-        break
+        exit
     }
 }
 

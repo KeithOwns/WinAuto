@@ -1,4 +1,5 @@
-﻿<#
+﻿#Requires -RunAsAdministrator
+<#
 .SYNOPSIS
     Enables 'Dev Drive protection' (Performance Mode) in Windows Security.
 

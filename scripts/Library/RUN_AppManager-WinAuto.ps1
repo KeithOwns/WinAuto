@@ -55,13 +55,18 @@ while ($running) {
     if ($key.VirtualKeyCode -eq 13) { $val = "" } else { $val = $key.Character.ToString() }
     
     switch ($val) {
-        '1' { & "$PSScriptRoot\RUN_Install_Apps-Configurable.ps1" }
-        '2' { & "$PSScriptRoot\RUN_Bulk_Uninstaller.ps1" }
-        '3' { & "$PSScriptRoot\RUN_AppLibrary_Browser.ps1" }
-        '4' { & "$PSScriptRoot\SET_Create_AppConfig.ps1" }
+        '1' { & "$PSScriptRoot\RUN_InstallAppsConfigurable-WinAuto.ps1" }
+        '2' { & "$PSScriptRoot\RUN_BulkUninstaller-WinAuto.ps1" }
+        '3' { & "$PSScriptRoot\RUN_AppLibraryBrowser-WinAuto.ps1" }
+        '4' { & "$PSScriptRoot\SET_CreateAppConfig-WinAuto.ps1" }
         Default { $running = $false }
     }
 }
+
+# --- FOOTER ---
+Write-Host ""
+Write-Centered "$Char_Copyright 2026, www.AIIT.support. All Rights Reserved." $FGCyan
+Write-Host ""
 
 
 

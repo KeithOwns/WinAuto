@@ -46,10 +46,11 @@ if ($null -eq $av) {
 
 $secScripts = @(
     "SET_EnableRealTimeProtection-WinAuto.ps1",
+    "SET_Enable-FirewallNetworkProtection.ps1",
     "SET_EnablePUA-WinAuto.ps1",
     "SET_EnableMemoryIntegrity-WinAuto.ps1",
     "SET_EnableLSA-WinAuto.ps1",
-    "SET_EnableKernelStackProtection-WinAuto.ps1",
+    "SET_Enable-KernelModeHardwareStackProtection.ps1",
     "SET_EnableSmartScreen-WinAuto.ps1",
     "SET_EnableMSstoreSmartScreen-WinAuto.ps1",
     "SET_EnablePhishingProtection-WinAuto.ps1",
@@ -59,11 +60,11 @@ $secScripts = @(
 
 foreach ($s in $secScripts) { 
 
-    if ($s -eq "SET_EnableRealTimeProtection-WinAuto.ps1") {
+    if ($s -eq "SET_EnableRealTimeProtection-WinAuto.ps1" -or $s -eq "SET_Enable-FirewallNetworkProtection.ps1") {
 
         if ($null -ne $av) {
 
-            Write-LeftAligned "$FGDarkYellow$Char_Warn Managed by $av. Skipping RTP Enable.$Reset"
+            Write-LeftAligned "$FGDarkYellow$Char_Warn Managed by $av. Skipping $($s -replace '-WinAuto.ps1','').$Reset"
 
             continue
 
@@ -71,7 +72,7 @@ foreach ($s in $secScripts) {
 
         if ($tp) {
 
-            Write-LeftAligned "$FGDarkYellow$Char_Warn Tamper Protection is ON. Skipping RTP Enable.$Reset"
+            Write-LeftAligned "$FGDarkYellow$Char_Warn Tamper Protection is ON. Skipping $($s -replace '-WinAuto.ps1','').$Reset"
 
             continue
 

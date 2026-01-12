@@ -41,6 +41,10 @@ Write-Host ""
 Invoke-AnimatedPause -Timeout 10
 Write-Host ""
 
+# --- FOOTER ---
+Write-Centered "$Char_Copyright 2026, www.AIIT.support. All Rights Reserved." $FGCyan
+Write-Host ""
+
 
 
 

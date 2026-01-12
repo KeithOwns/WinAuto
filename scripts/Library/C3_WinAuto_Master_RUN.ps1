@@ -53,7 +53,7 @@ while ($running) {
     $inputStr = Read-Host "  $Char_Finger Selection"
     
     switch ($inputStr.Trim().ToUpper()) {
-        '0' { & "$PSScriptRoot\CHECK_System_PreCheck.ps1" }
+        '0' { & "$PSScriptRoot\CHECK_SystemPreCheck-WinAuto.ps1" }
         '1' { & "$PSScriptRoot\C1_WindowsUpdate_SETnSCAN.ps1"; Start-Sleep -Seconds 1 }
         '2' { & "$PSScriptRoot\C2_WindowsSecurity_CHECKnSETnSCAN.ps1"; Start-Sleep -Seconds 1 }
         '3' { & "$PSScriptRoot\C5_WindowsMaintenance_SETnSCAN.ps1" }
@@ -69,11 +69,11 @@ while ($running) {
             Write-Centered $subPrompt
             $subKey = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
             $subChar = $subKey.Character.ToString().ToUpper()
-            if ($subChar -eq 'C') { & "$PSScriptRoot\SET_Create_AppConfig.ps1" } elseif ($subChar -eq 'I') { & "$PSScriptRoot\RUN_Install_Apps-Configurable.ps1"; Start-Sleep -Seconds 1 }
+            if ($subChar -eq 'C') { & "$PSScriptRoot\SET_CreateAppConfig-WinAuto.ps1" } elseif ($subChar -eq 'I') { & "$PSScriptRoot\RUN_InstallAppsConfigurable-WinAuto.ps1"; Start-Sleep -Seconds 1 }
         }
-        '5' { & "$PSScriptRoot\RUN_WindowsSFC_REPAIR.ps1"; Start-Sleep -Seconds 1 }
+        '5' { & "$PSScriptRoot\RUN_WindowsSFCRepair-WinAuto.ps1"; Start-Sleep -Seconds 1 }
         '6' { & "$PSScriptRoot\C3_WindowsDebloat_CLEAN.ps1"; Start-Sleep -Seconds 1 }
-        '7' { & "$PSScriptRoot\RUN_System_RESTORE.ps1" }
+        '7' { & "$PSScriptRoot\RUN_SystemRestore-WinAuto.ps1" }
         '8' { & "$PSScriptRoot\C4_Network_FIXnSECURE.ps1"; Start-Sleep -Seconds 1 }
         '9' {
             # Utilities Sub-Menu
@@ -103,19 +103,19 @@ while ($running) {
                 
                 $uInput = Read-Host "  $Char_Finger Selection"
                 switch ($uInput.Trim().ToUpper()) {
-                    '1' { & "$PSScriptRoot\CHECK_System_INVENTORY.ps1" }
-                    '2' { & "$PSScriptRoot\CHECK_Check_BatteryHealth.ps1" }
-                    '3' { & "$PSScriptRoot\CHECK_Check_BSOD.ps1" }
-                    '4' { & "$PSScriptRoot\SET_User_MANAGER.ps1" }
-                    '5' { & "$PSScriptRoot\SET_Manage_Startup.ps1" }
-                    '6' { & "$PSScriptRoot\RUN_Bulk_Uninstaller.ps1" }
-                    '7' { & "$PSScriptRoot\SET_Integration_ContextMenu.ps1" }
-                    '8' { & "$PSScriptRoot\SET_Setup_Notifications.ps1" }
-                    'U' { & "$PSScriptRoot\RUN_Update_Suite.ps1" }
-                    'P' { & "$PSScriptRoot\RUN_Pack_Portable.ps1" }
-                    'R' { & "$PSScriptRoot\RUN_Remote_EXECUTE.ps1" }
+                    '1' { & "$PSScriptRoot\CHECK_SystemInventory-WinAuto.ps1" }
+                    '2' { & "$PSScriptRoot\CHECK_BatteryHealth-WinAuto.ps1" }
+                    '3' { & "$PSScriptRoot\CHECK_BSOD-WinAuto.ps1" }
+                    '4' { & "$PSScriptRoot\SET_UserManager-WinAuto.ps1" }
+                    '5' { & "$PSScriptRoot\SET_ManageStartup-WinAuto.ps1" }
+                    '6' { & "$PSScriptRoot\RUN_BulkUninstaller-WinAuto.ps1" }
+                    '7' { & "$PSScriptRoot\SET_IntegrationContextMenu-WinAuto.ps1" }
+                    '8' { & "$PSScriptRoot\SET_SetupNotifications-WinAuto.ps1" }
+                    'U' { & "$PSScriptRoot\RUN_UpdateSuite-WinAuto.ps1" }
+                    'P' { & "$PSScriptRoot\RUN_PackPortable-WinAuto.ps1" }
+                    'R' { & "$PSScriptRoot\RUN_RemoteExecute-WinAuto.ps1" }
                     'D' { & "$PSScriptRoot\C3_WindowsDebloat_CLEAN.ps1" -Undo }
-                    'X' { & "$PSScriptRoot\RUN_Suite_CLEANUP.ps1" }
+                    'X' { & "$PSScriptRoot\RUN_SuiteCleanup-WinAuto.ps1" }
                     Default { $utilsRunning = $false }
                 }
             }
@@ -127,7 +127,7 @@ while ($running) {
             & "$PSScriptRoot\C1_WindowsUpdate_SETnSCAN.ps1"
             & "$PSScriptRoot\C2_WindowsSecurity_CHECKnSETnSCAN.ps1"
             & "$PSScriptRoot\C5_WindowsMaintenance_SETnSCAN.ps1"
-            & "$PSScriptRoot\RUN_WindowsSFC_REPAIR.ps1"
+            & "$PSScriptRoot\RUN_WindowsSFCRepair-WinAuto.ps1"
             & "$PSScriptRoot\C3_WindowsDebloat_CLEAN.ps1" -AutoRun
             Write-Host ""
             Write-LeftAligned "$FGGreen$Char_BallotCheck Suite Complete.$Reset"

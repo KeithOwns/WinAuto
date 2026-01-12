@@ -42,17 +42,15 @@ $lastRun = Get-WinAutoLastRun -Module "Maintenance"
 Write-LeftAligned "$FGGray Last Run: $FGWhite$lastRun$Reset"
 if ($SmartRun) { Write-LeftAligned "$FGCyan Smart Mode Active$Reset" }
 Write-Boundary
+& "$PSScriptRoot\CHECK_SystemPreCheck-WinAuto.ps1"
 
-# 1. SYSTEM PRE-CHECK
-Write-Log "Starting Maintenance Phase" -Level INFO
-& "$PSScriptRoot\CHECK_System_PreCheck.ps1"
+# 2. DISK HEALTH & CLEANUP
+Write-Host ""
+Write-LeftAligned "$Bold$FGCyan SYSTEM REPAIR & OPTIMIZATION $Reset"
+Write-Boundary $FGDarkCyan
 
-# 2. UPDATES (Always Run)
-& "$PSScriptRoot\C1_WindowsUpdate_SETnSCAN.ps1" -AutoRun -EnhancedSecurity:$EnhancedSecurity
-
-# 3. REPAIR (SFC - 30 Days)
 if (Test-RunNeeded -Key "Maintenance_SFC" -Days 30) {
-    & "$PSScriptRoot\RUN_WindowsSFC_REPAIR.ps1"
+    & "$PSScriptRoot\RUN_WindowsSFCRepair-WinAuto.ps1"
     Set-WinAutoLastRun -Module "Maintenance_SFC"
 }
 

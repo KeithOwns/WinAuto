@@ -36,7 +36,9 @@ while ($true) {
 
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
+    if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
     Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
+    if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Updates, Cleanup, Repair, Optimization${Reset}" }
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Smart Run${FGGray} (Recommended)${Reset}"
     Write-Host ""
@@ -44,25 +46,27 @@ while ($true) {
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[I]${Reset} ${FGGray}Install Applications${Reset}"
     Write-Host ""
+    $DetailText = if ($Global:ShowDetails) { "Collapse Details" } else { "Expand Details" }
+    Write-LeftAligned " ${FGBlack}${BGYellow}[Space]${Reset} ${FGGray}$DetailText${Reset}"
     Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
 
     Write-Boundary
 
-    $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 10
+    $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 0
 
     if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'A' -or $res.Character -eq 'a') {
         # Smart Run
         & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
-        break
+        Start-Sleep -Seconds 2
     } elseif ($res.Character -eq '1') {
         # Force Run
         & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -EnhancedSecurity:$Global:EnhancedSecurity
-        break
+        Start-Sleep -Seconds 2
     } elseif ($res.Character -eq '2') {
         # Force Run
         & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -EnhancedSecurity:$Global:EnhancedSecurity
-        break
+        Start-Sleep -Seconds 2
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
         continue
@@ -72,6 +76,9 @@ while ($true) {
         Write-Boundary
         Write-Centered "Press any key to return to menu..."
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    } elseif ($res.Character -eq ' ' -or $res.VirtualKeyCode -eq 32) {
+        $Global:ShowDetails = -not $Global:ShowDetails
+        continue
     } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {
         Clear-Host
         Write-Header "SYSTEM IMPACT MANIFEST"
@@ -102,7 +109,7 @@ while ($true) {
     } else {
         Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
         Start-Sleep -Seconds 1
-        exit
+        break
     }
 }
 

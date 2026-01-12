@@ -15,7 +15,7 @@ Describe "WinAuto Code Quality" {
             param($File)
             $content = Get-Content -Path $File.FullName -Raw
             $errors = [System.Management.Automation.PSParser]::Tokenize($content, [ref]$null) | Where-Object { $_.Type -eq 'Error' }
-            $errors | Should -BeNullOrEmpty
+            $errors | Should BeNullOrEmpty
         }
 
         It "File <File.Name> should require Administrator privileges" -TestCases $ScriptFiles {
@@ -24,7 +24,8 @@ Describe "WinAuto Code Quality" {
             if ($File.Name -match "Shared|Resources") { return }
             
             $content = Get-Content -Path $File.FullName -Raw
-            $content | Should -Match "#Requires -RunAsAdministrator"
+            # Pester 3 'Should Match'
+            $content | Should Match "#Requires -RunAsAdministrator"
         }
     }
 
@@ -33,12 +34,12 @@ Describe "WinAuto Code Quality" {
             param($File)
             $bytes = [System.IO.File]::ReadAllBytes($File.FullName)
             $hasBOM = ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
-            $hasBOM | Should -BeTrue
+            $hasBOM | Should Be $true
         }
 
         It "Shared_UI_Functions should be loadable" {
             $sharedPath = "$ProjectRoot\scripts\Shared\Shared_UI_Functions.ps1"
-            Test-Path $sharedPath | Should -BeTrue
+            Test-Path $sharedPath | Should Be $true
         }
     }
 
@@ -60,7 +61,7 @@ Describe "WinAuto Code Quality" {
         It "File <File.Name> should not contain 'Claude' references" -TestCases $ScriptFiles {
             param($File)
             $content = Get-Content -Path $File.FullName -Raw
-            $content | Should -NotMatch "Claude"
+            $content | Should Not Match "Claude"
         }
     }
 }

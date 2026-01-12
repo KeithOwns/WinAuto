@@ -83,15 +83,14 @@ function Set-ConsoleSnapRight {
 
         # 3. Position Adjustment
         $hWnd = [WinAutoNative.ConsoleUtils]::GetConsoleWindow()
-        $screenW = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(16) # SM_CXFULLSCREEN
-        $screenH = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(17) # SM_CYFULLSCREEN
+        $screenW = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(0) # SM_CXSCREEN
+        $screenH = [WinAutoNative.ConsoleUtils]::GetSystemMetrics(1) # SM_CYSCREEN
         
-        $rect = New-Object WinAutoNative.RECT
-        [WinAutoNative.ConsoleUtils]::GetWindowRect($hWnd, [ref]$rect)
-        $winW = $rect.Right - $rect.Left
+        $targetW = [Math]::Floor($screenW / 3)
+        $targetX = $screenW - $targetW
         
-        # Snap to Right Edge
-        [WinAutoNative.ConsoleUtils]::MoveWindow($hWnd, ($screenW - $winW), 0, $winW, $screenH, $true) | Out-Null
+        # Snap to Right Third
+        [WinAutoNative.ConsoleUtils]::MoveWindow($hWnd, $targetX, 0, $targetW, $screenH, $true) | Out-Null
 
     } catch {
         Write-Log "Failed to snap window: $($_.Exception.Message)" -Level WARNING
@@ -420,6 +419,12 @@ function Invoke-AnimatedPause {
     Write-Host ""
     $PromptCursorTop = [Console]::CursorTop
     
+    if ($Timeout -le 0) {
+        $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGYellow}ENTER${FGWhite} to ${FGYellow}$ActionText${FGWhite} | or any other key to SKIP$Char_Skip${Reset}"
+        Write-Centered $PromptStr
+        return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    }
+
     # Create a wrapper that passes the local context to the global TickAction
     $LocalTick = {
         param($Elapsed)
