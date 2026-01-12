@@ -1,13 +1,11 @@
-﻿<#
-.SYNOPSIS
-    WinAuto One-Liner Bootstrapper
-.DESCRIPTION
-    Downloads, installs, and launches the WinAuto suite.
-    - Downloads ZIP from GitHub
-    - Extracts to Documents
-    - Creates Desktop Shortcut
-    - Launches Suite
-#>
+﻿# .SYNOPSIS
+#     WinAuto One-Liner Bootstrapper
+# .DESCRIPTION
+#     Downloads, installs, and launches the WinAuto suite.
+#     - Downloads ZIP from GitHub
+#     - Extracts to Documents
+#     - Creates Desktop Shortcut
+#     - Launches Suite
 
 # --- CONFIGURATION ---
 $InstallDir = "$env:USERPROFILE\Documents\WinAuto"
