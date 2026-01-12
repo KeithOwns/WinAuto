@@ -1202,6 +1202,9 @@ while ($true) {
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
         continue
+    } elseif ($res.Character -eq ' ' -or $res.VirtualKeyCode -eq 32) {
+        $Global:ShowDetails = -not $Global:ShowDetails
+        continue
     } elseif ($res.Character -eq 'I' -or $res.Character -eq 'i') {
         Invoke-WA_InstallCppRedist
         Write-Boundary
