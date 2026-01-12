@@ -420,7 +420,7 @@ function Invoke-AnimatedPause {
     $PromptCursorTop = [Console]::CursorTop
     
     if ($Timeout -le 0) {
-        $PromptStr = "$FGWhite$Char_Keyboard Press $FGYellow[S]$FGWhite or $FGYellow[Enter]$FGWhite to $ActionText ...$Reset"
+        $PromptStr = "$FGWhite$Char_Keyboard Press [${FGBlack}${BGYellow}S${Reset}${FGWhite}] or $FGYellow[Enter]$FGWhite to $ActionText ...$Reset"
         Write-Host $PromptStr
         return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }

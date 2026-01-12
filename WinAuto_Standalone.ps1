@@ -489,7 +489,7 @@ function Invoke-AnimatedPause {
     param([string]$ActionText = "CONTINUE", [int]$Timeout = 10)
     Write-Host ""; $PromptCursorTop = [Console]::CursorTop
     if ($Timeout -le 0) {
-        $PromptStr = "$FGWhite$Char_Keyboard Press $FGYellow[S]$FGWhite or $FGYellow[Enter]$FGWhite to $ActionText ...$Reset"
+        $PromptStr = "$FGWhite$Char_Keyboard Press [${FGBlack}${BGYellow}S${Reset}${FGWhite}] or $FGYellow[Enter]$FGWhite to $ActionText ...$Reset"
         Write-Host $PromptStr
         return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
@@ -1251,7 +1251,7 @@ while ($true) {
     $enStatus   = if ($Global:EnhancedSecurity) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
 
     Write-Host ""
-    Write-LeftAligned " ${FGYellow}Smart Run${Reset}"
+    Write-LeftAligned " ${FGBlack}${BGYellow}S${Reset}${FGYellow}mart Run >${Reset}"
     Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
     Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
@@ -1261,8 +1261,8 @@ while ($true) {
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[I]${Reset} ${FGGray}Install Applications${Reset}"
     Write-Host ""
-    $DetailText = if ($Global:ShowDetails) { "Collapse Details" } else { "Expand Details" }
-    Write-LeftAligned " ${FGBlack}${BGYellow}[Space]${Reset} ${FGGray}$DetailText${Reset}"
+    $DetailText = if ($Global:ShowDetails) { "Details (Collapse)" } else { "Details (Expand)" }
+    Write-LeftAligned " ${FGBlack}${BGYellow}Space${Reset} ${FGGray}$DetailText${Reset}"
     Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
     Write-Boundary
 
