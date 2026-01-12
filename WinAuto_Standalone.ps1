@@ -870,6 +870,83 @@ function Invoke-WA_SystemPreCheck {
     Invoke-AnimatedPause -Timeout 5
 }
 
+function Invoke-WA_InstallRequiredApps {
+    Write-Header "REQUIRED APPLICATIONS"
+    
+    # Check for Winget
+    $winget = Get-Command winget.exe -ErrorAction SilentlyContinue
+    if (-not $winget) {
+        Write-LeftAligned "$FGRed$Char_FailureX Winget is not installed.$Reset"
+        return
+    }
+
+    # Hardcoded App List (Standalone Requirement)
+    $Apps = @(
+        @{ AppName="Adobe Creative Cloud"; Type="WINGET"; WingetId="Adobe.CreativeCloud"; MatchName="*Adobe Creative Cloud*" },
+        @{ AppName="Box"; Type="MSI"; Url="https://e3.boxcdn.net/box-installers/desktop/releases/win/Box-x64.msi"; MatchName="Box" },
+        @{ AppName="Box for Office"; Type="EXE"; Url="https://e3.boxcdn.net/box-installers/boxforoffice/currentrelease/BoxForOffice.exe"; MatchName="*Box for Office*"; SilentArgs="/quiet /norestart"; PreDelay=10 },
+        @{ AppName="Box Tools"; Type="EXE"; Url="https://e3.boxcdn.net/box-installers/boxedit/win/currentrelease/BoxToolsInstaller.exe"; MatchName="*Box Tools*"; SilentArgs="/quiet /norestart ALLUSERS=1" }
+    )
+
+    # Add Laptop specific apps if applicable
+    $chassis = (Get-CimInstance -ClassName Win32_SystemEnclosure -ErrorAction SilentlyContinue).ChassisTypes
+    $IsLaptop = ($chassis -and ($chassis -contains 8 -or $chassis -contains 9 -or $chassis -contains 10 -or $chassis -contains 11 -or $chassis -contains 12 -or $chassis -contains 14 -or $chassis -contains 18 -or $chassis -contains 21 -or $chassis -contains 30 -or $chassis -contains 32))
+    
+    if ($IsLaptop) {
+        $Apps += @{ AppName="Crestron AirMedia"; Type="WINGET"; WingetId="Crestron.AirMedia"; MatchName="*AirMedia*" }
+    }
+
+    Write-LeftAligned "Checking application status..."
+    $AppsToInstall = @()
+    foreach ($app in $Apps) {
+        # Simple check for installed app
+        $installed = Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*, HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*, HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like $app.MatchName }
+        if ($installed) {
+            Write-LeftAligned "$FGDarkGreen$Char_BallotCheck Found: $($app.AppName)$Reset"
+        } else {
+            Write-LeftAligned "$FGDarkRed$Char_FailureX Missing: $($app.AppName)$Reset"
+            $AppsToInstall += $app
+        }
+    }
+
+    if ($AppsToInstall.Count -gt 0) {
+        Write-Host ""
+        Write-BodyTitle "INSTALLATION QUEUE"
+        foreach ($app in $AppsToInstall) {
+            Write-LeftAligned "$FGWhite $Char_Finger $($app.AppName)$Reset"
+        }
+
+        $res = Invoke-AnimatedPause "INSTALL"
+        if ($res.VirtualKeyCode -ne 13) { return }
+
+        foreach ($app in $AppsToInstall) {
+            Write-LeftAligned "$FGDarkCyan Installing $($app.AppName)...$Reset"
+            if ($app.PreDelay) { Start-Sleep -Seconds $app.PreDelay }
+
+            try {
+                if ($app.Type -eq "WINGET") {
+                    Start-Process "winget.exe" -ArgumentList "install --id $($app.WingetId) -e --silent --accept-package-agreements --accept-source-agreements" -Wait -NoNewWindow
+                } elseif ($app.Type -eq "MSI") {
+                    $tmp = Join-Path $env:TEMP "wa_installer.msi"
+                    Invoke-WebRequest -Uri $app.Url -OutFile $tmp -UseBasicParsing
+                    Start-Process "msiexec.exe" -ArgumentList "/i `"$tmp`" /qn /norestart" -Wait -NoNewWindow
+                    Remove-Item $tmp -Force
+                } elseif ($app.Type -eq "EXE") {
+                    $tmp = Join-Path $env:TEMP "wa_installer.exe"
+                    Invoke-WebRequest -Uri $app.Url -OutFile $tmp -UseBasicParsing
+                    Start-Process $tmp -ArgumentList $app.SilentArgs -Wait -NoNewWindow
+                    Remove-Item $tmp -Force
+                }
+                Write-LeftAligned "$FGGreen$Char_HeavyCheck Completed $($app.AppName).$Reset"
+            } catch {
+                Write-LeftAligned "$FGRed$Char_FailureX Failed: $($_.Exception.Message)$Reset"
+            }
+        }
+    } else {
+        Write-LeftAligned "$FGGreen$Char_HeavyCheck All applications are present.$Reset"
+    }
+}
+
 function Invoke-WA_InstallCppRedist {
     Write-Header "INSTALL C++ REDIST"
     $TempDir = "$env:TEMP\WinAuto_CppRedist"
@@ -1206,6 +1283,7 @@ while ($true) {
         $Global:ShowDetails = -not $Global:ShowDetails
         continue
     } elseif ($res.Character -eq 'I' -or $res.Character -eq 'i') {
+        Invoke-WA_InstallRequiredApps
         Invoke-WA_InstallCppRedist
         Write-Boundary
         Write-Centered "Press any key to return..."
