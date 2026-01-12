@@ -489,7 +489,7 @@ function Invoke-AnimatedPause {
     param([string]$ActionText = "CONTINUE", [int]$Timeout = 10)
     Write-Host ""; $PromptCursorTop = [Console]::CursorTop
     if ($Timeout -le 0) {
-        $PromptStr = "$FGYellow$Char_Keyboard Press $FGWhite[Enter]$FGYellow or $FGWhite[S]$FGYellow to $ActionText ...$Reset"
+        $PromptStr = "$FGWhite$Char_Keyboard Press $FGYellow[S]$FGWhite or $FGYellow[Enter]$FGWhite to $ActionText ...$Reset"
         Write-Host $PromptStr
         return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
@@ -1252,7 +1252,6 @@ while ($true) {
 
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[S]${Reset} ${FGYellow}mart Run${Reset}"
-    Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
     Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
