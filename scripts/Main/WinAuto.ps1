@@ -35,12 +35,12 @@ while ($true) {
     $enStatus   = if ($Global:EnhancedSecurity) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
 
     Write-Host ""
+    Write-LeftAligned " ${FGBlack}${BGYellow}[S]${Reset} ${FGYellow}mart Run ${FGDarkGray}(Selected)${Reset}"
+    Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
     Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Updates, Cleanup, Repair, Optimization${Reset}" }
-    Write-Host ""
-    Write-LeftAligned " ${FGBlack}${BGYellow}[A]${Reset} ${FGYellow}Smart Run${FGGray} (Recommended)${Reset}"
     Write-Host ""
     Write-LeftAligned " ${FGBlack}${BGYellow}[E]${Reset} ${FGYellow}Enhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
     Write-Host ""
@@ -54,7 +54,7 @@ while ($true) {
 
     $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 0
 
-    if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'A' -or $res.Character -eq 'a') {
+    if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
         # Smart Run
         & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
