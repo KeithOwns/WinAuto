@@ -82,7 +82,6 @@ This document details the specific technical changes that the **WinAuto** suite 
 | **Visual Effects** | **Performance** | Registry: `HKCU\...\Explorer\VisualEffects` -> `VisualFXSetting = 2` |
 | **Animations** | **Disabled** | Registry: `HKCU\...\Explorer\Advanced` -> `TaskbarAnimations = 0` |
 | **Selection Fade** | **Disabled** | Registry: `HKCU\...\Explorer\Advanced` -> `ListviewAlphaSelect = 0` |
-| **Taskbar Align** | **Left** | Registry: `HKCU\...\Explorer\Advanced` -> `TaskbarAl = 0` |
 | **Power Plan** | **High Perf** | `powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c` |
 
 ---
@@ -851,18 +850,6 @@ function Invoke-WA_SetFirewall {
     } catch { Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset" }
 }
 
-function Invoke-WA_AlignTaskbarLeft {
-    param([switch]$Undo)
-    Write-Header "TASKBAR ALIGNMENT"
-    try {
-        $target = if ($Undo) { 1 } else { 0 } # 0 = Left, 1 = Center
-        $pos = if ($Undo) { "Center" } else { "Left" }
-        $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-        Set-ItemProperty -Path $path -Name "TaskbarAl" -Value $target -Type DWord -Force
-        Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar Aligned to $pos.$Reset"
-    } catch { Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset" }
-}
-
 function Invoke-WA_SetPowerPlanHigh {
     param([switch]$Undo)
     Write-Header "POWER SETTINGS"
@@ -1264,7 +1251,6 @@ function Invoke-WinAutoConfiguration {
     
     # UI & Performance
     Invoke-WA_SetVisualFX
-    Invoke-WA_AlignTaskbarLeft
     Invoke-WA_SetPowerPlanHigh
     
     # New Standard Config

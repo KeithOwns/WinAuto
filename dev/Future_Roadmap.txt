@@ -1,0 +1,38 @@
+Optional settings to be later enabled in 'custom versions' of the script later once a 'script customizer' script is ready:
+
+
+Patching--
+  1. Network Security
+   * Legacy Protocols: Disables LLMNR (Link-Local Multicast Name Resolution) via Registry.
+   * NetBIOS: Disables NetBIOS over TCP/IP on all active network adapters.
+   * Secure DNS: Configures all active network adapters to use Cloudflare DNS (1.1.1.1 and 1.0.0.1).
+  2. Privacy & UI Tweaks
+   * Bloatware Removal: Uninstalls pre-installed junk apps (e.g., Spotify, TikTok, Disney+, Candy Crush, etc.).
+   * Context Menu: Restores the Classic Windows 10 style right-click context menu.
+  3. Windows Update Configuration
+   * Expedited Updates: Sets updates to restart the system ASAP when required.
+     (UI: ⏩ Get me up to date: Restart ASAP ●On)
+   * Metered Connections: Allows updates to download over metered networks.
+     (UI: ⏲ Download updates over metered connections ●On)
+  4. Manual Toggles (Optional)
+   * Phishing Protection: Enable Phishing Protection manually via Windows Security Health.
+     (UI: Scroll to 'Phishing protection' and toggle to 'On')
+
+UI--
+  1. Right-Click Context Menu
+   * Restores Classic Menu: Disables the modern Windows 11 "Show more options" requirement and restores the classic Windows 10 style right-click
+     context menu by default.
+   * Note: This is applied in `SET_ClassicContextMenu-W11.ps1`.
+  2. File Explorer Configuration
+   * Show File Extensions: Configures Explorer to always show file extensions (e.g., .txt, .exe) for known file types.
+   * Show Hidden Files: Enables the visibility of hidden files, folders, and drives.
+   * Note: These are part of the `Configure-Explorer` logic in the Debloat/UI phase.
+  3. Taskbar Alignment
+   * Left Align: Aligns the Windows 11 Taskbar icons to the Left (Windows 10 style) instead of the default Center.
+
+Script Variations & Customization--
+  1. Proposed Custom Scripts
+   * WinAutoSECURE.ps1: A specialized version that enables ALL enhanced security features by default (Maximum Hardening).
+   * WinAutoCUSTOM.ps1: A user-generated script created via a 'Script Customizer' tool, allowing granular selection of features.
+  2. Optional Features for Customization
+   * Dev Drive Protection: Enable 'Performance Mode' for Dev Drives (Async scanning). Ideal for software developers but not enabled by default.
