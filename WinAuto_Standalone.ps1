@@ -16,7 +16,7 @@ Set-StrictMode -Version Latest
 $Global:EnhancedSecurity = $false
 $Global:ShowDetails = $false
 $Global:WinAutoFirstLoad = $true
-$Global:InstallApps = $false
+$Global:InstallApps = $true
 
 # --- MANIFEST CONTENT ---
 $Global:WinAutoManifestContent = @'
