@@ -17,27 +17,34 @@ param([switch]$Undo)
 
 Write-Header "TASKBAR CONFIGURATION"
 
-try {
-    $adv = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-    $search = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"
-    
-    if ($Undo) {
-        Set-RegistryDword -Path $search -Name "SearchboxTaskbarMode" -Value 1 -LogPath $Global:WinAutoLogPath # Icon Only
-        Set-RegistryDword -Path $adv -Name "ShowTaskViewButton" -Value 1 -LogPath $Global:WinAutoLogPath
-        Set-RegistryDword -Path $adv -Name "TaskbarDa" -Value 1 -LogPath $Global:WinAutoLogPath # Widgets
-        Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar defaults reverted.$Reset"
-    } else {
-        # Search: Search icon and label (Value 2 on Win11)
-        Set-RegistryDword -Path $search -Name "SearchboxTaskbarMode" -Value 2 -LogPath $Global:WinAutoLogPath
-        # Taskview: OFF
-        Set-RegistryDword -Path $adv -Name "ShowTaskViewButton" -Value 0 -LogPath $Global:WinAutoLogPath
-        # Widgets: OFF
-        Set-RegistryDword -Path $adv -Name "TaskbarDa" -Value 0 -LogPath $Global:WinAutoLogPath
-        Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar defaults configured (Search: Icon+Label, Taskview: Off, Widgets: Off).$Reset"
+$adv = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+$search = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"
+
+# Inner helper for robust setting
+function Set-KeySafe {
+    param($P, $N, $V)
+    try {
+        if (-not (Test-Path $P)) { New-Item -Path $P -Force -ErrorAction SilentlyContinue | Out-Null }
+        Set-ItemProperty -Path $P -Name $N -Value $V -Type DWord -Force -ErrorAction Stop
+    } catch {
+        Write-LeftAligned "$FGRed$Char_RedCross Failed to set $N : $($_.Exception.Message)$Reset"
+        Write-Log "Taskbar Config Error ($N): $($_.Exception.Message)" -Level ERROR
     }
-} catch { 
-    Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset"
-    Write-Log "Taskbar Config Error: $($_.Exception.Message)" -Level ERROR
+}
+
+if ($Undo) {
+    Set-KeySafe $search "SearchboxTaskbarMode" 1
+    Set-KeySafe $adv "ShowTaskViewButton" 1
+    Set-KeySafe $adv "TaskbarDa" 1
+    Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar defaults reverted.$Reset"
+} else {
+    # Search: Search icon and label (Value 2)
+    Set-KeySafe $search "SearchboxTaskbarMode" 2
+    # Taskview: OFF
+    Set-KeySafe $adv "ShowTaskViewButton" 0
+    # Widgets: OFF
+    Set-KeySafe $adv "TaskbarDa" 0
+    Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar configuration applied.$Reset"
 }
 
 Write-Host ""
