@@ -82,6 +82,8 @@ This document details the specific technical changes that the **WinAuto** suite 
 | **Visual Effects** | **Performance** | Registry: `HKCU\...\Explorer\VisualEffects` -> `VisualFXSetting = 2` |
 | **Animations** | **Disabled** | Registry: `HKCU\...\Explorer\Advanced` -> `TaskbarAnimations = 0` |
 | **Selection Fade** | **Disabled** | Registry: `HKCU\...\Explorer\Advanced` -> `ListviewAlphaSelect = 0` |
+| **Taskbar Search** | **Icon+Label**| Registry: `HKCU\...\Search` -> `SearchboxTaskbarMode = 2` |
+| **Taskbar Items** | **Clean** | Taskview & Widgets set to **OFF** |
 | **Power Plan** | **High Perf** | `powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c` |
 
 ---
@@ -839,18 +841,80 @@ function Invoke-WA_SetPhishingMalicious {
 }
 
 function Invoke-WA_SetFirewall {
+
     param([switch]$Undo)
+
     Write-Header "WINDOWS FIREWALL"
+
     try {
+
         $target = if ($Undo) { 'False' } else { 'True' }
+
         Get-NetFirewallProfile | ForEach-Object {
+
             Set-NetFirewallProfile -Name $_.Name -Enabled $target -ErrorAction Stop
+
             Write-LeftAligned "$FGGreen$Char_HeavyCheck $($_.Name) Firewall configured.$Reset"
+
         }
+
     } catch { Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset" }
+
 }
 
+
+
+function Invoke-WA_SetTaskbarDefaults {
+
+    param([switch]$Undo)
+
+    Write-Header "TASKBAR CONFIGURATION"
+
+    try {
+
+        $adv = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+
+        $search = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"
+
+        
+
+        if ($Undo) {
+
+            Set-RegistryDword -Path $search -Name "SearchboxTaskbarMode" -Value 1 # Icon Only
+
+            Set-RegistryDword -Path $adv -Name "ShowTaskViewButton" -Value 1
+
+            Set-RegistryDword -Path $adv -Name "TaskbarDa" -Value 1 # Widgets
+
+            Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar defaults reverted.$Reset"
+
+        } else {
+
+            # Search: Search icon and label (Value 2 on Win11)
+
+            Set-RegistryDword -Path $search -Name "SearchboxTaskbarMode" -Value 2
+
+            # Taskview: OFF
+
+            Set-RegistryDword -Path $adv -Name "ShowTaskViewButton" -Value 0
+
+            # Widgets: OFF
+
+            Set-RegistryDword -Path $adv -Name "TaskbarDa" -Value 0
+
+            Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar defaults configured (Search: Icon+Label, Taskview: Off, Widgets: Off).$Reset"
+
+        }
+
+    } catch { Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset" }
+
+}
+
+
+
 function Invoke-WA_SetPowerPlanHigh {
+
+
     param([switch]$Undo)
     Write-Header "POWER SETTINGS"
     try {
@@ -1251,6 +1315,7 @@ function Invoke-WinAutoConfiguration {
     
     # UI & Performance
     Invoke-WA_SetVisualFX
+    Invoke-WA_SetTaskbarDefaults
     Invoke-WA_SetPowerPlanHigh
     
     # New Standard Config
