@@ -214,7 +214,7 @@ $Char_Unlock      = [char]::ConvertFromUtf32(0x1F513)
 
 # --- SYSTEM PATHS ---
 if ($null -eq (Get-Variable -Name 'WinAutoLogDir' -Scope Global -ErrorAction SilentlyContinue)) {
-    $Global:WinAutoLogDir = "$env:USERPROFILE\Downloads\WinAuto_Logs"
+    $Global:WinAutoLogDir = "C:\Users\admin\GitHub\WinAuto\logs"
 }
 $env:WinAutoLogDir = $Global:WinAutoLogDir
 

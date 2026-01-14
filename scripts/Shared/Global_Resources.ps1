@@ -122,7 +122,7 @@ $Char_Lock        = [char]::ConvertFromUtf32(0x1F512) # ðŸ”’
 $Char_Unlock      = [char]::ConvertFromUtf32(0x1F513) # ðŸ”“
 
 # --- SYSTEM PATHS ---
-if (-not (Get-Variable -Name "WinAutoLogDir" -Scope Global -ErrorAction SilentlyContinue)) { $Global:WinAutoLogDir = "$env:USERPROFILE\Downloads\WinAuto_Logs" }
+if (-not (Get-Variable -Name "WinAutoLogDir" -Scope Global -ErrorAction SilentlyContinue)) { $Global:WinAutoLogDir = "C:\Users\admin\GitHub\WinAuto\logs" }
 $env:WinAutoLogDir = $Global:WinAutoLogDir
 if (-not (Get-Variable -Name "WinAutoLogPath" -Scope Global -ErrorAction SilentlyContinue)) { $Global:WinAutoLogPath = "$Global:WinAutoLogDir\WinAuto_$(Get-Date -Format 'yyyyMMdd_HHmmss').log" }
 

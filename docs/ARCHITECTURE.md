@@ -73,7 +73,7 @@ WinAuto ensures its own integrity. The quality checker parses the Abstract Synta
 
 *   **Registry Hardening:** All tweaks rely on standard Group Policy (HKLM\Software\Policies) keys where possible, falling back to User Preferences (HKCU) only when necessary.
 *   **Least Privilege:** While the suite requires Admin, it checks for this privilege immediately at startup and terminates gracefully if missing.
-*   **Logging:** All changes are logged to `C:\Users\%USERNAME%\Downloads\WinAuto_Logs` (configurable), allowing for post-execution auditing.
+*   **Logging:** All changes are logged to `C:\Users\admin\GitHub\WinAuto\logs` (configurable), allowing for post-execution auditing.
 
 ---
 © 2026 AI+IT Support. All Rights Reserved.
