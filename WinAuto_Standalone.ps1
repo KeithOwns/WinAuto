@@ -469,7 +469,7 @@ $Global:TickAction = {
         if ($i -lt $FilledCount) { $DynamicPart += "${BGYellow}${FGBlack}$Char${Reset}" } 
         else { if ($Char -eq " ") { $DynamicPart += " " } else { $DynamicPart += "${FGYellow}$Char${Reset}" } }
     }
-    $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}|${FGDarkGray} or any other key ${FGWhite}to SKIP$Char_Skip${Reset}"
+    $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}or${FGDarkGray} ${FGRed}[Esc]${FGWhite} to ${FGRed}EXIT${Reset}"
     try { [Console]::SetCursorPosition(0, $PromptCursorTop); Write-Centered $PromptStr } catch {}
 }
 
@@ -1360,10 +1360,11 @@ while ($true) {
     Write-Boundary
 
     # Timeout logic: Only on first load (when no action has been taken yet)
+    $ActionText = "RUN"
     $TimeoutSecs = if ($Global:WinAutoFirstLoad -ne $false) { 10 } else { 0 }
     $Global:WinAutoFirstLoad = $false
 
-    $res = Invoke-AnimatedPause -ActionText "RUN" -Timeout $TimeoutSecs
+    $res = Invoke-AnimatedPause -ActionText $ActionText -Timeout $TimeoutSecs
 
     if ($res.VirtualKeyCode -eq 27) {
         Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
