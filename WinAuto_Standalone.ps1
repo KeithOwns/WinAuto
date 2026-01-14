@@ -15,6 +15,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $Global:EnhancedSecurity = $false
 $Global:ShowDetails = $false
+$Global:WinAutoFirstLoad = $true
 
 # --- MANIFEST CONTENT ---
 $Global:WinAutoManifestContent = @'
