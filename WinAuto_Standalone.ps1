@@ -1355,11 +1355,16 @@ while ($true) {
     Write-LeftAligned "  ${FGYellow}Space${Reset} ${FGGray}$DetailText${Reset}"
     Write-Host ""
     Write-LeftAligned "  ${FGYellow}[H]${Reset}${FGCyan}elp / System Impact${Reset}"
+    Write-LeftAligned "  ${FGRed}[Esc] Exit Script${Reset}"
     Write-Boundary
 
-    $res = Invoke-AnimatedPause -ActionText "RUN" -Timeout 0
+    $res = Invoke-AnimatedPause -ActionText "RUN" -Timeout 10
 
-    if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
+    if ($res.VirtualKeyCode -eq 27) {
+        Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
+        Start-Sleep -Seconds 1
+        break
+    } elseif ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
         Invoke-WinAutoConfiguration -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         Invoke-WinAutoMaintenance -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
     } elseif ($res.Character -eq 'C' -or $res.Character -eq 'c') {
