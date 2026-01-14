@@ -62,22 +62,31 @@ if ($freeGB -lt 10) {
 
 # 4. System Health (Event Log)
 Write-LeftAligned "$FGWhite System Health (Last 24h)$Reset"
-$cutoff = (Get-Date).AddHours(-24)
 try {
-    $errors = Get-EventLog -LogName System -EntryType Error,Warning -After $cutoff -ErrorAction SilentlyContinue
-    $critCount = ($errors | Where-Object { $_.EntryType -eq 'Error' }).Count
-    $warnCount = ($errors | Where-Object { $_.EntryType -eq 'Warning' }).Count
+    $filter = @{
+        LogName = 'System'
+        StartTime = (Get-Date).AddHours(-24)
+        Level = 1, 2, 3 # 1=Crit, 2=Error, 3=Warn
+    }
     
-    $cColor = $FGGreen
-    if ($critCount -gt 0) { $cColor = $FGRed }
+    $events = Get-WinEvent -FilterHashtable $filter -ErrorAction Stop
     
-    $wColor = $FGGreen
-    if ($warnCount -gt 0) { $wColor = $FGYellow }
+    $critCount = ($events | Where-Object { $_.Level -le 2 }).Count
+    $warnCount = ($events | Where-Object { $_.Level -eq 3 }).Count
+    
+    $cColor = if ($critCount -gt 0) { $FGRed } else { $FGGreen }
+    $wColor = if ($warnCount -gt 0) { $FGYellow } else { $FGGreen }
     
     Write-Line "System Errors:" "$critCount" $cColor
     Write-Line "Warnings:" "$warnCount" $wColor
+
 } catch {
-    Write-Host "  $FGRed$Char_Warn Unable to read Event Log.$Reset"
+    if ($_.Exception.Message -match "No events were found") {
+        Write-Line "System Errors:" "0" $FGGreen
+        Write-Line "Warnings:" "0" $FGGreen
+    } else {
+        Write-Host "  $FGRed$Char_Warn Error reading Event Log: $($_.Exception.Message)$Reset"
+    }
 }
 
 # 5. Pending Reboot
