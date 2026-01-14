@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Checks if 'Kernel-mode Hardware-enforced Stack Protection' is enabled.
@@ -44,3 +44,4 @@ Write-Host ""
 Write-Boundary $FGDarkBlue
 Start-Sleep -Seconds 1
 Write-Host ""
+

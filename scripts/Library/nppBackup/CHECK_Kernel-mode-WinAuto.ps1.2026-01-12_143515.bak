@@ -1,0 +1,44 @@
+function Invoke-WA_SetKernelStack {
+    param([switch]$Undo)
+    Write-Header "KERNEL STACK PROTECTION"
+
+    # Registry Check Only
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\KernelShadowStacks"
+    $regName = "Enabled"
+    
+    try {
+        $key = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop
+        $currentStatus = $key.$regName
+    }
+    catch {
+        # If the key or path does not exist, the feature is disabled by default
+        $currentStatus = 0
+    }
+
+    $desiredStatus = if ($Undo) { 0 } else { 1 }
+
+    # Check if already in desired state
+    if ($currentStatus -eq $desiredStatus) {
+        if ($desiredStatus -eq 1) {
+            Write-LeftAligned "$FGGreen$Char_BallotCheck Kernel Stack Protection is already ON.$Reset"
+        } else {
+            Write-LeftAligned "$FGGreen$Char_BallotCheck Kernel Stack Protection is already OFF.$Reset"
+        }
+        return
+    }
+
+    # Set via Registry
+    try {
+        Set-RegistryDword -Path $regPath -Name $regName -Value $desiredStatus
+        if ($desiredStatus -eq 1) {
+            Write-LeftAligned "$FGGreen$Char_HeavyCheck Kernel Stack Protection enabled via registry.$Reset"
+            Write-LeftAligned "$FGYellow$Char_Warn A system restart is required for this change to take effect.$Reset"
+        } else {
+            Write-LeftAligned "$FGGreen$Char_HeavyCheck Kernel Stack Protection disabled via registry.$Reset"
+            Write-LeftAligned "$FGYellow$Char_Warn A system restart is required for this change to take effect.$Reset"
+        }
+    } catch {
+        Write-LeftAligned "$FGRed$Char_CrossMark Failed to set Kernel Stack Protection: $($_.Exception.Message)$Reset"
+        Write-LeftAligned "$FGYellow$Char_Warn This feature may not be supported by your hardware.$Reset"
+    }
+}

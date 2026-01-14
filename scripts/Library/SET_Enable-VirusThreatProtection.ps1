@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Enables 'Virus & threat protection' in Windows Security via UI Automation.
@@ -149,3 +149,4 @@ while ($KeepLooping -and ($RetryCount -lt $MaxRetries)) {
 }
 
 Write-Log "Automation complete." "Cyan"
+

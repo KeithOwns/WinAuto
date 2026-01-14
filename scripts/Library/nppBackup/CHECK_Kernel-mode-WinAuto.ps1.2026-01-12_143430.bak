@@ -1,0 +1,43 @@
+<#
+.SYNOPSIS
+    Checks if 'Kernel-mode Hardware-enforced Stack Protection' is enabled.
+    
+.DESCRIPTION
+    This script queries the Registry for the KernelShadowStacks scenario.
+    It returns ON if the 'Enabled' key is set to 1, and OFF otherwise.
+#>
+
+# 1. Clear the PowerShell window (per your preferences)
+Clear-Host
+
+# 2. Define Registry Path for Kernel Shadow Stacks
+$regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\KernelShadowStacks"
+$regName = "Enabled"
+
+# 3. Check the Registry Value
+try {
+    $key = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop
+    $status = $key.$regName
+}
+catch {
+    # If the key or path does not exist, the feature is disabled by default
+    $status = 0
+}
+
+# 4. Output the Result
+Write-Host "Checking Windows Security > Core Isolation > Stack Protection..." -ForegroundColor Cyan
+Write-Host "----------------------------------------------------------------"
+
+if ($status -eq 1) {
+    Write-Host "Kernel-mode Hardware-enforced Stack Protection is: [ ON ]" -ForegroundColor Green
+}
+else {
+    Write-Host "Kernel-mode Hardware-enforced Stack Protection is: [ OFF ]" -ForegroundColor Red
+}
+
+# 5. Print 5 empty lines before exiting (per your preferences)
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""

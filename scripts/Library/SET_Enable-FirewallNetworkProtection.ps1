@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Enables 'Firewall & network protection' in Windows Security via UI Automation.
@@ -162,3 +162,4 @@ if (Get-Variable -Name "Char_Copyright" -ErrorAction SilentlyContinue) {
     Write-Host "  (c) 2026, www.AIIT.support. All Rights Reserved." -ForegroundColor Cyan
     Write-Host ""
 }
+

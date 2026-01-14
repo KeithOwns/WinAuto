@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Enables 'Kernel-mode Hardware-enforced Stack Protection' in Windows Security via UI Automation.

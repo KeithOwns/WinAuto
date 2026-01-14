@@ -1,3 +1,4 @@
+﻿#Requires -RunAsAdministrator
 # file: Install_RequiredApps-WinAuto.ps1
 param(
     [ValidateSet('Desktop','Laptop','Auto')]

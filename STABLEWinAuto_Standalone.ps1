@@ -1,4 +1,4 @@
-﻿﻿#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     WinAuto Standalone Edition
@@ -15,12 +15,6 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $Global:EnhancedSecurity = $false
 $Global:ShowDetails = $false
-$Global:WinAutoFirstLoad = $true
-$Global:InstallApps = $false
-$Global:RegPath_WU_UX  = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
-$Global:RegPath_WU_POL = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
-$Global:RegPath_Winlogon_User = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" 
-$Global:RegPath_Winlogon_Machine = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
 # --- MANIFEST CONTENT ---
 $Global:WinAutoManifestContent = @'
@@ -38,7 +32,7 @@ This document details the specific technical changes that the **WinAuto** suite 
 | **PUA Protection** | **Enabled** | `Set-MpPreference -PUAProtection Enabled` & Edge 'Block downloads' |
 | **Core Isolation** | **Enabled** | Registry: `HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity` -> `Enabled = 1` |
 | **LSA Protection** | **Enabled** | Registry: `HKLM\SYSTEM\CurrentControlSet\Control\Lsa` -> `RunAsPPL = 1` |
-| **Stack Protection** | **Enabled** | Registry: `HKLM\...\Session Manager\Kernel` -> `KernelSEHOPEnabled = 1` & UI Automation |
+| **Stack Protection** | **Enabled** | Windows Security UI Automation (Core Isolation) |
 | **SmartScreen (System)** | **Warn** | Registry: `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer` -> `SmartScreenEnabled = "Warn"` |
 | **SmartScreen (Store)** | **Enabled** | Registry: `HKCU\Software\Microsoft\Windows\CurrentVersion\AppHost` -> `EnableWebContentEvaluation = 1` |
 | **Phishing Protection** | **Enabled** | `Set-MpPreference -EnablePhishingProtection Enabled` |
@@ -85,10 +79,6 @@ This document details the specific technical changes that the **WinAuto** suite 
 | :--- | :--- | :--- |
 | **Visual Effects** | **Performance** | Registry: `HKCU\...\Explorer\VisualEffects` -> `VisualFXSetting = 2` |
 | **Animations** | **Disabled** | Registry: `HKCU\...\Explorer\Advanced` -> `TaskbarAnimations = 0` |
-| **Selection Fade** | **Disabled** | Registry: `HKCU\...\Explorer\Advanced` -> `ListviewAlphaSelect = 0` |
-| **Taskbar Search** | **Icon+Label**| Registry: `HKCU\...\Search` -> `SearchboxTaskbarMode = 2` |
-| **Taskbar Items** | **Clean** | Taskview & Widgets set to **OFF** |
-| **Power Plan** | **High Perf** | `powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c` |
 
 ---
 © 2026, www.AIIT.support. All Rights Reserved.
@@ -151,8 +141,6 @@ $Char_CheckLight  = [char]0x2713
 $Char_FailureX    = [char]0x2716 
 $Char_CrossMark   = [char]0x274C 
 $Char_CrossSquare = [char]0x274E 
-$Char_RedCross    = [char]0x274C
-$Char_RedX        = [char]0x2716
 $Char_Eject       = [char]0x23CF 
 $Char_Gear        = [char]0x2699 
 $Char_BlackCircle = [char]0x25CF 
@@ -220,19 +208,13 @@ $Char_Unlock      = [char]::ConvertFromUtf32(0x1F513)
 
 # --- SYSTEM PATHS ---
 if ($null -eq (Get-Variable -Name 'WinAutoLogDir' -Scope Global -ErrorAction SilentlyContinue)) {
-    $Global:WinAutoLogDir = "C:\Users\admin\GitHub\WinAuto\logs"
+    $Global:WinAutoLogDir = "$env:USERPROFILE\Downloads\WinAuto_Logs"
 }
 $env:WinAutoLogDir = $Global:WinAutoLogDir
 
 if ($null -eq (Get-Variable -Name 'WinAutoLogPath' -Scope Global -ErrorAction SilentlyContinue)) {
     $Global:WinAutoLogPath = "$Global:WinAutoLogDir\WinAuto_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 }
-
-# Registry Paths (Shared)
-$Global:RegPath_WU_UX  = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
-$Global:RegPath_WU_POL = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
-$Global:RegPath_Winlogon_User = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" 
-$Global:RegPath_Winlogon_Machine = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
 # Lines & Blocks
 $Char_EmDash      = [char]0x2014 
@@ -353,7 +335,7 @@ function Write-Header {
     param([string]$Title)
     Clear-Host
     Write-Host ""
-    $WinAutoTitle = "$Char_Window WinAuto $Char_Loop"
+    $WinAutoTitle = "$([char]::ConvertFromUtf32(0x1FA9F)) WinAuto $Char_Loop"
     Write-Centered "$Bold$FGCyan$WinAutoTitle$Reset"
     Write-Centered "$Bold$FGCyan$($Title.ToUpper())$Reset"
     Write-Boundary
@@ -477,7 +459,7 @@ $Global:TickAction = {
         if ($i -lt $FilledCount) { $DynamicPart += "${BGYellow}${FGBlack}$Char${Reset}" } 
         else { if ($Char -eq " ") { $DynamicPart += " " } else { $DynamicPart += "${FGYellow}$Char${Reset}" } }
     }
-    $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}or${FGDarkGray} ${FGRed}[Esc]${FGWhite} to ${FGRed}EXIT${Reset}"
+    $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}|${FGDarkGray} or any other key ${FGWhite}to SKIP$Char_Skip${Reset}"
     try { [Console]::SetCursorPosition(0, $PromptCursorTop); Write-Centered $PromptStr } catch {}
 }
 
@@ -507,8 +489,8 @@ function Invoke-AnimatedPause {
     param([string]$ActionText = "CONTINUE", [int]$Timeout = 10)
     Write-Host ""; $PromptCursorTop = [Console]::CursorTop
     if ($Timeout -le 0) {
-        $PromptStr = "$FGWhite$Char_Keyboard Press ${FGBlack}${BGYellow}[S]${Reset}$FGWhite to $FGYellow$ActionText$FGWhite or ${FGRed}[Esc]${Reset}$FGWhite to ${FGRed}EXIT$Reset"
-        Write-Centered $PromptStr
+        $PromptStr = "$FGWhite$Char_Keyboard Press ${FGBlack}${BGYellow}[S]${Reset}$FGWhite or $FGYellow[Enter]$FGWhite to $ActionText ...$Reset"
+        Write-Host $PromptStr
         return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
     $LocalTick = { param($Elapsed) & $Global:TickAction -ElapsedTimespan $Elapsed -ActionText $ActionText -Timeout $Timeout -PromptCursorTop $PromptCursorTop }
@@ -686,19 +668,14 @@ function Invoke-WA_SetLSA {
 function Invoke-WA_SetKernelStack {
     param([switch]$Undo)
     Write-Header "KERNEL STACK PROTECTION"
-    $target = if ($Undo) { 0 } else { 1 }
-    
-    # 1. Registry Baseline
-    try {
-        Set-RegistryDword -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Kernel" -Name "KernelSEHOPEnabled" -Value $target
-        Write-LeftAligned "$FGGreen$Char_BallotCheck Registry baseline set.$Reset"
-    } catch {
-        Write-LeftAligned "$FGRed$Char_Warn Registry baseline failed.$Reset"
-    }
 
-    # 2. Try External Script (Repository Mode)
+    # 1. Try External Script (Repository Mode)
+    # Check for the script relative to the current script location
     $RootPath = if ($PSScriptRoot) { $PSScriptRoot } else { "." }
+    
     $ExternalScript = Join-Path $RootPath "scripts\Library\SET_Enable-KernelModeHardwareStackProtection.ps1"
+    
+    # If not found there, try checking if we are in the root and the scripts folder is there
     if (-not (Test-Path $ExternalScript)) {
         $ExternalScript = Join-Path $RootPath "..\scripts\Library\SET_Enable-KernelModeHardwareStackProtection.ps1"
     }
@@ -708,7 +685,10 @@ function Invoke-WA_SetKernelStack {
         try {
             $ProcArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $ExternalScript)
             if ($Undo) { $ProcArgs += "-Undo" } else { $ProcArgs += "-Force" }
+
+            # Run in a separate process to ensure clean UI Automation context, mimicking WinAuto.bat
             $p = Start-Process -FilePath "powershell.exe" -ArgumentList $ProcArgs -Wait -PassThru -NoNewWindow
+            
             if ($p.ExitCode -eq 0) {
                 Write-LeftAligned "$FGGreen$Char_CheckMark Kernel Stack Protection automation finished.$Reset"
             } else {
@@ -723,12 +703,10 @@ function Invoke-WA_SetKernelStack {
         }
     }
     
-    # 3. Standalone Fallback (UI Automation)
+    # 2. Standalone Fallback (UI Automation)
     try {
-        if (-not ([System.Management.Automation.PSTypeName]"System.Windows.Automation.AutomationElement").Type) {
-            Add-Type -AssemblyName UIAutomationClient
-            Add-Type -AssemblyName UIAutomationTypes
-        }
+        Add-Type -AssemblyName UIAutomationClient
+        Add-Type -AssemblyName UIAutomationTypes
     } catch {
         Write-LeftAligned "$FGRed$Char_RedCross Failed to load UI Automation assemblies.$Reset"
         return
@@ -771,35 +749,32 @@ function Invoke-WA_SetKernelStack {
         # Navigate to Device Security
         $DevSec = &$GetUIA $Window "Device security" ([System.Windows.Automation.ControlType]::ListItem)
         if ($DevSec) { 
-            try { ($DevSec.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern)).Select() } catch {}
+            ($DevSec.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern)).Select()
             Start-Sleep -Seconds 1
         }
 
         # Navigate to Core Isolation
         $CoreIso = &$GetUIA $Window "Core isolation details" ([System.Windows.Automation.ControlType]::Hyperlink)
         if ($CoreIso) {
-            try { ($CoreIso.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)).Invoke() } catch {}
+            ($CoreIso.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)).Invoke()
             Start-Sleep -Seconds 1
         }
 
         # Find Toggle
         $TargetName = "Kernel-mode Hardware-enforced Stack Protection"
+        # Search more broadly first (ignoring type) then filter, or try CheckBox directly
         $Toggle = &$GetUIA $Window $TargetName ([System.Windows.Automation.ControlType]::CheckBox)
         
         if ($Toggle) {
-            try {
-                $Pattern = $Toggle.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
-                $CurrentState = $Pattern.Current.ToggleState # 0=Off, 1=On
-                $DesiredState = if ($Undo) { 0 } else { 1 }
+            $Pattern = $Toggle.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
+            $CurrentState = $Pattern.Current.ToggleState # 0=Off, 1=On
+            $DesiredState = if ($Undo) { 0 } else { 1 }
 
-                if ($CurrentState -ne $DesiredState) {
-                    $Pattern.Toggle()
-                    Write-LeftAligned "$FGGreen$Char_HeavyCheck Toggled Stack Protection.$Reset"
-                } else {
-                    Write-LeftAligned "$FGGreen$Char_BallotCheck Stack Protection already in desired state.$Reset"
-                }
-            } catch {
-                Write-LeftAligned "$FGRed$Char_Warn Failed to toggle: $_$Reset"
+            if ($CurrentState -ne $DesiredState) {
+                $Pattern.Toggle()
+                Write-LeftAligned "$FGGreen$Char_HeavyCheck Toggled Stack Protection.$Reset"
+            } else {
+                Write-LeftAligned "$FGGreen$Char_BallotCheck Stack Protection already in desired state.$Reset"
             }
         } else {
             Write-LeftAligned "$FGRed$Char_Warn Could not find Stack Protection toggle (Hardware might not support it).$Reset"
@@ -847,87 +822,14 @@ function Invoke-WA_SetPhishingMalicious {
 }
 
 function Invoke-WA_SetFirewall {
-
     param([switch]$Undo)
-
     Write-Header "WINDOWS FIREWALL"
-
     try {
-
         $target = if ($Undo) { 'False' } else { 'True' }
-
         Get-NetFirewallProfile | ForEach-Object {
-
             Set-NetFirewallProfile -Name $_.Name -Enabled $target -ErrorAction Stop
-
             Write-LeftAligned "$FGGreen$Char_HeavyCheck $($_.Name) Firewall configured.$Reset"
-
         }
-
-    } catch { Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset" }
-
-}
-
-
-
-function Invoke-WA_SetTaskbarDefaults {
-
-    param([switch]$Undo)
-
-    Write-Header "TASKBAR CONFIGURATION"
-
-    try {
-
-        $adv = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-
-        $search = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"
-
-        
-
-        if ($Undo) {
-
-            Set-RegistryDword -Path $search -Name "SearchboxTaskbarMode" -Value 1 # Icon Only
-
-            Set-RegistryDword -Path $adv -Name "ShowTaskViewButton" -Value 1
-
-            Set-RegistryDword -Path $adv -Name "TaskbarDa" -Value 1 # Widgets
-
-            Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar defaults reverted.$Reset"
-
-        } else {
-
-            # Search: Search icon and label (Value 2 on Win11)
-
-            Set-RegistryDword -Path $search -Name "SearchboxTaskbarMode" -Value 2
-
-            # Taskview: OFF
-
-            Set-RegistryDword -Path $adv -Name "ShowTaskViewButton" -Value 0
-
-            # Widgets: OFF
-
-            Set-RegistryDword -Path $adv -Name "TaskbarDa" -Value 0
-
-            Write-LeftAligned "$FGGreen$Char_HeavyCheck Taskbar defaults configured (Search: Icon+Label, Taskview: Off, Widgets: Off).$Reset"
-
-        }
-
-    } catch { Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset" }
-
-}
-
-
-
-function Invoke-WA_SetPowerPlanHigh {
-
-
-    param([switch]$Undo)
-    Write-Header "POWER SETTINGS"
-    try {
-        $planGuid = if ($Undo) { "381b4222-f694-41f0-9685-ff5bb260df2e" } else { "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c" }
-        $planName = if ($Undo) { "Balanced" } else { "High Performance" }
-        powercfg /setactive $planGuid
-        Write-LeftAligned "$FGGreen$Char_HeavyCheck Power plan set to $planName.$Reset"
     } catch { Write-LeftAligned "$FGRed$Char_RedCross Error: $($_.Exception.Message)$Reset" }
 }
 
@@ -978,17 +880,6 @@ function Invoke-WA_InstallRequiredApps {
         return
     }
 
-    # Temporary Disable Controlled Folder Access for installation
-    $cfaChanged = $false
-    try {
-        $cfa = (Get-MpPreference).EnableControlledFolderAccess
-        if ($cfa -eq 1) {
-            Write-LeftAligned "$FGDarkYellow$Char_Warn Temporarily disabling Controlled Folder Access...$Reset"
-            Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue
-            $cfaChanged = $true
-        }
-    } catch {}
-
     # Hardcoded App List (Standalone Requirement)
     $Apps = @(
         @{ AppName="Adobe Creative Cloud"; Type="WINGET"; WingetId="Adobe.CreativeCloud"; MatchName="*Adobe Creative Cloud*" },
@@ -1026,58 +917,38 @@ function Invoke-WA_InstallRequiredApps {
         }
 
         $res = Invoke-AnimatedPause "INSTALL"
-        if ($res.VirtualKeyCode -eq 13) {
-            foreach ($app in $AppsToInstall) {
-                Write-LeftAligned "$FGDarkCyan Installing $($app.AppName)...$Reset"
-                if ($app.PreDelay) { Start-Sleep -Seconds $app.PreDelay }
+        if ($res.VirtualKeyCode -ne 13) { return }
 
-                try {
-                    if ($app.Type -eq "WINGET") {
-                        Start-Process "winget.exe" -ArgumentList "install --id $($app.WingetId) -e --silent --accept-package-agreements --accept-source-agreements" -Wait -NoNewWindow
-                    } elseif ($app.Type -eq "MSI") {
-                        $tmp = Join-Path $env:TEMP "wa_installer.msi"
-                        Invoke-WebRequest -Uri $app.Url -OutFile $tmp -UseBasicParsing
-                        Start-Process "msiexec.exe" -ArgumentList "/i `"$tmp`" /qn /norestart" -Wait -NoNewWindow
-                        Remove-Item $tmp -Force
-                    } elseif ($app.Type -eq "EXE") {
-                        $tmp = Join-Path $env:TEMP "wa_installer.exe"
-                        Invoke-WebRequest -Uri $app.Url -OutFile $tmp -UseBasicParsing
-                        Start-Process $tmp -ArgumentList $app.SilentArgs -Wait -NoNewWindow
-                        Remove-Item $tmp -Force
-                    }
-                    Write-LeftAligned "$FGGreen$Char_HeavyCheck Completed $($app.AppName).$Reset"
-                } catch {
-                    Write-LeftAligned "$FGRed$Char_FailureX Failed: $($_.Exception.Message)$Reset"
+        foreach ($app in $AppsToInstall) {
+            Write-LeftAligned "$FGDarkCyan Installing $($app.AppName)...$Reset"
+            if ($app.PreDelay) { Start-Sleep -Seconds $app.PreDelay }
+
+            try {
+                if ($app.Type -eq "WINGET") {
+                    Start-Process "winget.exe" -ArgumentList "install --id $($app.WingetId) -e --silent --accept-package-agreements --accept-source-agreements" -Wait -NoNewWindow
+                } elseif ($app.Type -eq "MSI") {
+                    $tmp = Join-Path $env:TEMP "wa_installer.msi"
+                    Invoke-WebRequest -Uri $app.Url -OutFile $tmp -UseBasicParsing
+                    Start-Process "msiexec.exe" -ArgumentList "/i `"$tmp`" /qn /norestart" -Wait -NoNewWindow
+                    Remove-Item $tmp -Force
+                } elseif ($app.Type -eq "EXE") {
+                    $tmp = Join-Path $env:TEMP "wa_installer.exe"
+                    Invoke-WebRequest -Uri $app.Url -OutFile $tmp -UseBasicParsing
+                    Start-Process $tmp -ArgumentList $app.SilentArgs -Wait -NoNewWindow
+                    Remove-Item $tmp -Force
                 }
+                Write-LeftAligned "$FGGreen$Char_HeavyCheck Completed $($app.AppName).$Reset"
+            } catch {
+                Write-LeftAligned "$FGRed$Char_FailureX Failed: $($_.Exception.Message)$Reset"
             }
         }
     } else {
         Write-LeftAligned "$FGGreen$Char_HeavyCheck All applications are present.$Reset"
     }
-
-    # Re-enable Controlled Folder Access if changed
-    if ($cfaChanged) {
-        try {
-            Write-LeftAligned "$FGDarkYellow$Char_Warn Re-enabling Controlled Folder Access...$Reset"
-            Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction SilentlyContinue
-        } catch {}
-    }
 }
 
 function Invoke-WA_InstallCppRedist {
     Write-Header "INSTALL C++ REDIST"
-
-    # Temporary Disable Controlled Folder Access
-    $cfaChanged = $false
-    try {
-        $cfa = (Get-MpPreference).EnableControlledFolderAccess
-        if ($cfa -eq 1) {
-            Write-LeftAligned "$FGDarkYellow$Char_Warn Temporarily disabling Controlled Folder Access...$Reset"
-            Set-MpPreference -EnableControlledFolderAccess Disabled -ErrorAction SilentlyContinue
-            $cfaChanged = $true
-        }
-    } catch {}
-
     $TempDir = "$env:TEMP\WinAuto_CppRedist"
     if (-not (Test-Path $TempDir)) { New-Item -Path $TempDir -ItemType Directory -Force | Out-Null }
 
@@ -1105,15 +976,6 @@ function Invoke-WA_InstallCppRedist {
         }
     }
     try { Remove-Item -Path $TempDir -Recurse -Force -ErrorAction SilentlyContinue } catch {}
-
-    # Re-enable Controlled Folder Access if changed
-    if ($cfaChanged) {
-        try {
-            Write-LeftAligned "$FGDarkYellow$Char_Warn Re-enabling Controlled Folder Access...$Reset"
-            Set-MpPreference -EnableControlledFolderAccess Enabled -ErrorAction SilentlyContinue
-        } catch {}
-    }
-
     Write-Host ""
     Write-LeftAligned "$FGCyan Done.$Reset"
 }
@@ -1167,10 +1029,8 @@ function Invoke-WA_WindowsUpdate {
 
     # UI Automation Setup
     try {
-        if (-not ([System.Management.Automation.PSTypeName]"System.Windows.Automation.AutomationElement").Type) {
-            Add-Type -AssemblyName UIAutomationClient
-            Add-Type -AssemblyName UIAutomationTypes
-        }
+        Add-Type -AssemblyName UIAutomationClient
+        Add-Type -AssemblyName UIAutomationTypes
     } catch {
         Write-LeftAligned "$FGRed$Char_RedCross Failed to load UI Automation assemblies.$Reset"
     }
@@ -1318,11 +1178,7 @@ function Invoke-WinAutoConfiguration {
     Invoke-WA_SetPhishing
     Invoke-WA_SetPhishingMalicious
     Invoke-WA_SetFirewall
-    
-    # UI & Performance
     Invoke-WA_SetVisualFX
-    Invoke-WA_SetTaskbarDefaults
-    Invoke-WA_SetPowerPlanHigh
     
     # New Standard Config
     Invoke-WA_HideAdminAccounts
@@ -1331,10 +1187,6 @@ function Invoke-WinAutoConfiguration {
         Invoke-WA_HardenNetwork
         Invoke-WA_SetPowerShellSecurity
         Invoke-WA_DebloatUI
-    } else {
-        # Restart Explorer to apply Standard UI changes
-        Write-LeftAligned "Restarting Explorer to apply UI settings..."
-        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
     }
 
     Write-Boundary
@@ -1363,11 +1215,6 @@ function Invoke-WinAutoMaintenance {
     Write-Boundary
     Invoke-WA_SystemPreCheck
     Invoke-WA_WindowsUpdate -EnhancedSecurity:$EnhancedSecurity
-
-    if (Test-RunNeeded -Key "Maintenance_Cpp" -Days 90) {
-        Invoke-WA_InstallCppRedist
-        Set-WinAutoLastRun -Module "Maintenance_Cpp"
-    }
 
     if (Test-RunNeeded -Key "Maintenance_SFC" -Days 30) {
         Invoke-WA_SFCRepair
@@ -1402,7 +1249,6 @@ while ($true) {
     $lastConfig = Get-WinAutoLastRun -Module "Configuration"
     $lastMaint  = Get-WinAutoLastRun -Module "Maintenance"
     $enStatus   = if ($Global:EnhancedSecurity) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
-    $iStatus    = if ($Global:InstallApps) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
 
     Write-Host ""
     Write-LeftAligned "=>${FGBlack}${BGYellow}[S]${Reset}${FGYellow}mart Run${Reset}"
@@ -1412,36 +1258,24 @@ while ($true) {
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
     Write-Host ""
     Write-LeftAligned "  ${FGYellow}[M]${Reset}${FGGray}aintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
-    Write-LeftAligned "      ${FGYellow}[I]${Reset}${FGGray}nstall Applications${FGGray} (Toggle: $iStatus${FGGray})${Reset}"
+    Write-LeftAligned "      ${FGYellow}[I]${Reset}${FGGray}nstall Applications${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Updates, Cleanup, Repair, Optimization${Reset}" }
     Write-Host ""
     $DetailText = if ($Global:ShowDetails) { "Details (Collapse)" } else { "Details (Expand)" }
     Write-LeftAligned "  ${FGYellow}Space${Reset} ${FGGray}$DetailText${Reset}"
     Write-Host ""
     Write-LeftAligned "  ${FGYellow}[H]${Reset}${FGCyan}elp / System Impact${Reset}"
-    Write-LeftAligned "  ${FGRed}[Esc] Exit Script${Reset}"
     Write-Boundary
 
-    # Timeout logic: Only on first load (when no action has been taken yet)
-    $ActionText = "RUN"
-    $TimeoutSecs = if ($Global:WinAutoFirstLoad -ne $false) { 10 } else { 0 }
-    $Global:WinAutoFirstLoad = $false
+    $res = Invoke-AnimatedPause -ActionText "RUN" -Timeout 0
 
-    $res = Invoke-AnimatedPause -ActionText $ActionText -Timeout $TimeoutSecs
-
-    if ($res.VirtualKeyCode -eq 27) {
-        Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
-        Start-Sleep -Seconds 1
-        break
-    } elseif ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
+    if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
         Invoke-WinAutoConfiguration -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         Invoke-WinAutoMaintenance -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
-        if ($Global:InstallApps) { Invoke-WA_InstallRequiredApps }
     } elseif ($res.Character -eq 'C' -or $res.Character -eq 'c') {
         Invoke-WinAutoConfiguration -EnhancedSecurity:$Global:EnhancedSecurity
     } elseif ($res.Character -eq 'M' -or $res.Character -eq 'm') {
         Invoke-WinAutoMaintenance -EnhancedSecurity:$Global:EnhancedSecurity
-        if ($Global:InstallApps) { Invoke-WA_InstallRequiredApps }
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
         continue
@@ -1449,8 +1283,11 @@ while ($true) {
         $Global:ShowDetails = -not $Global:ShowDetails
         continue
     } elseif ($res.Character -eq 'I' -or $res.Character -eq 'i') {
-        $Global:InstallApps = -not $Global:InstallApps
-        continue
+        Invoke-WA_InstallRequiredApps
+        Invoke-WA_InstallCppRedist
+        Write-Boundary
+        Write-Centered "Press any key to return..."
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {
         Clear-Host
         Write-Header "SYSTEM IMPACT MANIFEST"
