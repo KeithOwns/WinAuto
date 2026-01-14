@@ -199,7 +199,7 @@ function Write-LeftAligned {
     Write-Host (" " * $Indent + $Text)
 }
 
-function Write-Boundary {
+function Write_Boundary {
     param([string]$Color = $FGDarkBlue)
     Write-Host "$Color$([string]'_' * 60)$Reset"
 }
@@ -392,7 +392,7 @@ $Global:TickAction = {
         if ($i -lt $FilledCount) { $DynamicPart += "${BGYellow}${FGBlack}$Char${Reset}" } 
         else { if ($Char -eq " ") { $DynamicPart += " " } else { $DynamicPart += "${FGYellow}$Char${Reset}" } }
     }
-    $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}|${FGDarkGray} or any other key ${FGWhite}to SKIP$Char_Skip${Reset}"
+    $PromptStr = "${FGWhite}$Char_Keyboard Press ${FGDarkGray}$DynamicPart${FGDarkGray}${FGWhite}to${FGDarkGray} ${FGYellow}$ActionText${FGDarkGray} ${FGWhite}or${FGDarkGray} ${FGRed}[Esc]${FGWhite} to ${FGRed}EXIT${Reset}"
     try { [Console]::SetCursorPosition(0, $PromptCursorTop); Write-Centered $PromptStr } catch {}
 }
 
@@ -420,8 +420,8 @@ function Invoke-AnimatedPause {
     $PromptCursorTop = [Console]::CursorTop
     
     if ($Timeout -le 0) {
-        $PromptStr = "$FGWhite$Char_Keyboard Press [${FGBlack}${BGYellow}S${Reset}${FGWhite}] or $FGYellow[Enter]$FGWhite to $ActionText ...$Reset"
-        Write-Host $PromptStr
+        $PromptStr = "$FGWhite$Char_Keyboard Press ${FGBlack}${BGYellow}[S]${Reset}$FGWhite to $FGYellow$ActionText$FGWhite or ${FGRed}[Esc]${Reset}$FGWhite to ${FGRed}EXIT$Reset"
+        Write-Centered $PromptStr
         return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 

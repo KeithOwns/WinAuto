@@ -11,6 +11,14 @@
 . "$PSScriptRoot\..\Shared\Shared_UI_Functions.ps1"
 $Global:WinAutoCompactMode = $true
 $Global:WinAutoManualActions = @()
+$Global:WinAutoFirstLoad = $true
+$Global:InstallApps = $false
+
+# Registry Paths (Shared Initialization)
+$Global:RegPath_WU_UX  = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
+$Global:RegPath_WU_POL = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+$Global:RegPath_Winlogon_User = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" 
+$Global:RegPath_Winlogon_Machine = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
 # --- LOGGING SETUP ---
 . "$PSScriptRoot\..\Library\MODULE_Logging.ps1"
@@ -33,48 +41,66 @@ while ($true) {
     $lastConfig = Get-WinAutoLastRun -Module "Configuration"
     $lastMaint  = Get-WinAutoLastRun -Module "Maintenance"
     $enStatus   = if ($Global:EnhancedSecurity) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
+    $iStatus    = if ($Global:InstallApps) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
 
     Write-Host ""
-    Write-LeftAligned " ${FGBlack}${BGYellow}S${Reset}${FGYellow}mart Run >${Reset}"
-    Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
+    Write-LeftAligned "=>${FGBlack}${BGYellow}[S]${Reset}${FGYellow}mart Run${Reset}"
+    Write-Host ""
+    Write-LeftAligned "  ${FGYellow}[C]${Reset}${FGGray}onfiguration ${FGDarkGray}(Last: $lastConfig)${Reset}"
+    Write-LeftAligned "      ${FGYellow}[E]${Reset}${FGGray}nhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
-    Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
+    Write-Host ""
+    Write-LeftAligned "  ${FGYellow}[M]${Reset}${FGGray}aintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
+    Write-LeftAligned "      ${FGYellow}[I]${Reset}${FGGray}nstall Applications${FGGray} (Toggle: $iStatus${FGGray})${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Updates, Cleanup, Repair, Optimization${Reset}" }
     Write-Host ""
-    Write-LeftAligned " ${FGBlack}${BGYellow}[E]${Reset} ${FGYellow}Enhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
-    Write-Host ""
-    Write-LeftAligned " ${FGBlack}${BGYellow}[I]${Reset} ${FGGray}Install Applications${Reset}"
-    Write-Host ""
     $DetailText = if ($Global:ShowDetails) { "Details (Collapse)" } else { "Details (Expand)" }
-    Write-LeftAligned " ${FGBlack}${BGYellow}Space${Reset} ${FGGray}$DetailText${Reset}"
-    Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
+    Write-LeftAligned "  ${FGYellow}Space${Reset} ${FGGray}$DetailText${Reset}"
+    Write-Host ""
+    Write-LeftAligned "  ${FGYellow}[H]${Reset}${FGCyan}elp / System Impact${Reset}"
+    Write-LeftAligned "  ${FGRed}[Esc] Exit Script${Reset}"
 
     Write-Boundary
 
-    $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 0
+    # Timeout logic: Only on first load
+    $ActionText = "RUN"
+    $TimeoutSecs = if ($Global:WinAutoFirstLoad -ne $false) { 10 } else { 0 }
+    $Global:WinAutoFirstLoad = $false
 
-    if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
+    $res = Invoke-AnimatedPause -ActionText $ActionText -Timeout $TimeoutSecs
+
+    if ($res.VirtualKeyCode -eq 27) {
+        # Esc
+        Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
+        Start-Sleep -Seconds 1
+        break
+    } elseif ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
         # Smart Run
         & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
+        
+        # Install Apps if toggled ON
+        if ($Global:InstallApps) { & "$PSScriptRoot\..\Library\RUN_InstallAppsConfigurable-WinAuto.ps1" }
+        
         Start-Sleep -Seconds 2
-    } elseif ($res.Character -eq '1') {
-        # Force Run
+    } elseif ($res.Character -eq 'C' -or $res.Character -eq 'c') {
+        # Force Run Config
         & "$PSScriptRoot\..\Library\MODULE_Configuration.ps1" -EnhancedSecurity:$Global:EnhancedSecurity
         Start-Sleep -Seconds 2
-    } elseif ($res.Character -eq '2') {
-        # Force Run
+    } elseif ($res.Character -eq 'M' -or $res.Character -eq 'm') {
+        # Force Run Maint
         & "$PSScriptRoot\..\Library\MODULE_Maintenance.ps1" -EnhancedSecurity:$Global:EnhancedSecurity
+        
+        # Install Apps if toggled ON
+        if ($Global:InstallApps) { & "$PSScriptRoot\..\Library\RUN_InstallAppsConfigurable-WinAuto.ps1" }
+        
         Start-Sleep -Seconds 2
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
         continue
     } elseif ($res.Character -eq 'I' -or $res.Character -eq 'i') {
-        # Install C++ Redistributables
-        & "$PSScriptRoot\..\Library\RUN_Install_CppRedist-WinAuto.ps1"
-        Write-Boundary
-        Write-Centered "Press any key to return to menu..."
-        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        $Global:InstallApps = -not $Global:InstallApps
+        continue
     } elseif ($res.Character -eq ' ' -or $res.VirtualKeyCode -eq 32) {
         $Global:ShowDetails = -not $Global:ShowDetails
         continue

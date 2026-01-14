@@ -89,6 +89,8 @@ foreach ($s in $secScripts) {
 # 2. UI OPTIMIZATION (Core Only)
 
 & "$PSScriptRoot\SET_VisualEffectsPerformance-WinAuto.ps1"
+& "$PSScriptRoot\SET_TaskbarDefaults-WinAuto.ps1"
+& "$PSScriptRoot\SET_PowerPlanHigh-WinAuto.ps1"
 
 # 3. WINDOWS UPDATE CONFIGURATION
 Write-Host ""
@@ -172,6 +174,24 @@ try {
     
 } catch {
     Write-LeftAligned "$FGRed$Char_Warn Failed to hide admin accounts: $_$Reset"
+}
+
+# Restart Explorer to apply UI changes
+if (-not $EnhancedSecurity) {
+    # If EnhancedSecurity is ON, Debloat module handles restart. If OFF, we must do it here.
+    # Actually, let's just force it to be safe, Debloat might have run earlier or not at all if skipped.
+    # Wait, the main WinAuto script structure is: Config -> Maintenance.
+    # Debloat is called in Step 4.
+    # Step 4 calls `C3_WindowsDebloat_CLEAN.ps1`.
+    # Let's check `C3_WindowsDebloat_CLEAN.ps1`. It usually restarts explorer.
+    # But if standard run, step 4 runs.
+    # Wait, Step 4 runs `C3_WindowsDebloat_CLEAN.ps1 -AutoRun`.
+    # Does `C3` restart explorer?
+    
+    # To be safe and consistent with Standalone, we'll add it here.
+    Write-Host ""
+    Write-LeftAligned "Restarting Explorer to apply UI settings..."
+    Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
 }
 
 Write-Boundary
