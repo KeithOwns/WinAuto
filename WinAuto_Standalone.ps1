@@ -16,6 +16,7 @@ Set-StrictMode -Version Latest
 $Global:EnhancedSecurity = $false
 $Global:ShowDetails = $false
 $Global:WinAutoFirstLoad = $true
+$Global:InstallApps = $false
 
 # --- MANIFEST CONTENT ---
 $Global:WinAutoManifestContent = @'
@@ -1340,6 +1341,7 @@ while ($true) {
     $lastConfig = Get-WinAutoLastRun -Module "Configuration"
     $lastMaint  = Get-WinAutoLastRun -Module "Maintenance"
     $enStatus   = if ($Global:EnhancedSecurity) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
+    $iStatus    = if ($Global:InstallApps) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
 
     Write-Host ""
     Write-LeftAligned "=>${FGBlack}${BGYellow}[S]${Reset}${FGYellow}mart Run${Reset}"
@@ -1349,7 +1351,7 @@ while ($true) {
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
     Write-Host ""
     Write-LeftAligned "  ${FGYellow}[M]${Reset}${FGGray}aintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
-    Write-LeftAligned "      ${FGYellow}[I]${Reset}${FGGray}nstall Applications${Reset}"
+    Write-LeftAligned "      ${FGYellow}[I]${Reset}${FGGray}nstall Applications${FGGray} (Toggle: $iStatus${FGGray})${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Updates, Cleanup, Repair, Optimization${Reset}" }
     Write-Host ""
     $DetailText = if ($Global:ShowDetails) { "Details (Collapse)" } else { "Details (Expand)" }
@@ -1373,10 +1375,12 @@ while ($true) {
     } elseif ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
         Invoke-WinAutoConfiguration -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         Invoke-WinAutoMaintenance -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
+        if ($Global:InstallApps) { Invoke-WA_InstallRequiredApps }
     } elseif ($res.Character -eq 'C' -or $res.Character -eq 'c') {
         Invoke-WinAutoConfiguration -EnhancedSecurity:$Global:EnhancedSecurity
     } elseif ($res.Character -eq 'M' -or $res.Character -eq 'm') {
         Invoke-WinAutoMaintenance -EnhancedSecurity:$Global:EnhancedSecurity
+        if ($Global:InstallApps) { Invoke-WA_InstallRequiredApps }
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
         continue
@@ -1384,11 +1388,8 @@ while ($true) {
         $Global:ShowDetails = -not $Global:ShowDetails
         continue
     } elseif ($res.Character -eq 'I' -or $res.Character -eq 'i') {
-        Invoke-WA_InstallRequiredApps
-        Invoke-WA_InstallCppRedist
-        Write-Boundary
-        Write-Centered "Press any key to return..."
-        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        $Global:InstallApps = -not $Global:InstallApps
+        continue
     } elseif ($res.Character -eq 'H' -or $res.Character -eq 'h') {
         Clear-Host
         Write-Header "SYSTEM IMPACT MANIFEST"
