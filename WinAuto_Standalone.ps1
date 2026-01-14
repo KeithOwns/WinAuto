@@ -337,7 +337,7 @@ function Write-LeftAligned {
 
 function Write-Boundary {
     param([string]$Color = $FGDarkBlue)
-    Write-Host "$Color$([string]$Char_HeavyLine * 60)$Reset"
+    Write-Host "$Color$([string]'_' * 60)$Reset"
 }
 
 function Write-Header {
@@ -1341,29 +1341,30 @@ while ($true) {
     $enStatus   = if ($Global:EnhancedSecurity) { "${FGGreen}ON" } else { "${FGDarkGray}OFF" }
 
     Write-Host ""
-    Write-LeftAligned " ${FGBlack}${BGYellow}S${Reset}${FGYellow}mart Run >${Reset}"
-    Write-LeftAligned " ${FGBlack}${BGYellow}[1]${Reset} ${FGGray}Configuration ${FGDarkGray}(Last: $lastConfig)${Reset}"
+    Write-LeftAligned "=>${FGBlack}${BGYellow}[S]${Reset}${FGYellow}mart Run${Reset}"
+    Write-Host ""
+    Write-LeftAligned "  ${FGYellow}[C]${Reset}${FGGray}onfiguration ${FGDarkGray}(Last: $lastConfig)${Reset}"
+    Write-LeftAligned "      ${FGYellow}[E]${Reset}${FGGray}nhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Sec, Firewall, Privacy, UI Tweaks${Reset}" }
-    Write-LeftAligned " ${FGBlack}${BGYellow}[2]${Reset} ${FGGray}Maintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
+    Write-Host ""
+    Write-LeftAligned "  ${FGYellow}[M]${Reset}${FGGray}aintenance   ${FGDarkGray}(Last: $lastMaint)${Reset}"
+    Write-LeftAligned "      ${FGYellow}[I]${Reset}${FGGray}nstall Applications${Reset}"
     if ($Global:ShowDetails) { Write-LeftAligned "      ${FGDarkGray}Updates, Cleanup, Repair, Optimization${Reset}" }
     Write-Host ""
-    Write-LeftAligned " ${FGBlack}${BGYellow}[E]${Reset} ${FGYellow}Enhanced Security${FGGray} (Toggle: $enStatus${FGGray})${Reset}"
-    Write-Host ""
-    Write-LeftAligned " ${FGBlack}${BGYellow}[I]${Reset} ${FGGray}Install Applications${Reset}"
-    Write-Host ""
     $DetailText = if ($Global:ShowDetails) { "Details (Collapse)" } else { "Details (Expand)" }
-    Write-LeftAligned " ${FGBlack}${BGYellow}Space${Reset} ${FGGray}$DetailText${Reset}"
-    Write-LeftAligned " ${FGBlack}${BGYellow}[H]${Reset} ${FGCyan}Help / System Impact${Reset}"
+    Write-LeftAligned "  ${FGYellow}Space${Reset} ${FGGray}$DetailText${Reset}"
+    Write-Host ""
+    Write-LeftAligned "  ${FGYellow}[H]${Reset}${FGCyan}elp / System Impact${Reset}"
     Write-Boundary
 
-    $res = Invoke-AnimatedPause -ActionText "EXECUTE" -Timeout 0
+    $res = Invoke-AnimatedPause -ActionText "RUN" -Timeout 0
 
     if ($res.VirtualKeyCode -eq 13 -or $res.Character -eq 'S' -or $res.Character -eq 's') {
         Invoke-WinAutoConfiguration -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
         Invoke-WinAutoMaintenance -SmartRun -EnhancedSecurity:$Global:EnhancedSecurity
-    } elseif ($res.Character -eq '1') {
+    } elseif ($res.Character -eq 'C' -or $res.Character -eq 'c') {
         Invoke-WinAutoConfiguration -EnhancedSecurity:$Global:EnhancedSecurity
-    } elseif ($res.Character -eq '2') {
+    } elseif ($res.Character -eq 'M' -or $res.Character -eq 'm') {
         Invoke-WinAutoMaintenance -EnhancedSecurity:$Global:EnhancedSecurity
     } elseif ($res.Character -eq 'E' -or $res.Character -eq 'e') {
         $Global:EnhancedSecurity = -not $Global:EnhancedSecurity
@@ -1396,4 +1397,8 @@ Write-Host ""
 Write-Boundary
 Write-Centered "$FGGreen ALL REQUESTED TASKS COMPLETE $Reset"
 Write-Footer
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
 Write-Host ""
