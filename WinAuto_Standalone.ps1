@@ -498,7 +498,7 @@ function Invoke-AnimatedPause {
     param([string]$ActionText = "CONTINUE", [int]$Timeout = 10)
     Write-Host ""; $PromptCursorTop = [Console]::CursorTop
     if ($Timeout -le 0) {
-        $PromptStr = "$FGWhite$Char_Keyboard Press [${FGBlack}${BGYellow}S${Reset}${FGWhite}] or $FGYellow[Enter]$FGWhite to $ActionText ...$Reset"
+        $PromptStr = "$FGWhite$Char_Keyboard Press ${FGBlack}${BGYellow}[S]${Reset}$FGWhite to $FGYellow$ActionText$FGWhite or ${FGRed}[Esc]${Reset}$FGWhite to ${FGRed}EXIT$Reset"
         Write-Host $PromptStr
         return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
@@ -1358,7 +1358,11 @@ while ($true) {
     Write-LeftAligned "  ${FGRed}[Esc] Exit Script${Reset}"
     Write-Boundary
 
-    $res = Invoke-AnimatedPause -ActionText "RUN" -Timeout 10
+    # Timeout logic: Only on first load (when no action has been taken yet)
+    $TimeoutSecs = if ($Global:WinAutoFirstLoad -ne $false) { 10 } else { 0 }
+    $Global:WinAutoFirstLoad = $false
+
+    $res = Invoke-AnimatedPause -ActionText "RUN" -Timeout $TimeoutSecs
 
     if ($res.VirtualKeyCode -eq 27) {
         Write-LeftAligned "$FGGray Exiting WinAuto...$Reset"
