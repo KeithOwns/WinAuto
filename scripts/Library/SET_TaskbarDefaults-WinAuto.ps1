@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Configures Taskbar defaults: Search (Icon+Label), TaskView (Off), Widgets (Off).
@@ -44,3 +44,4 @@ Write-Host ""
 Write-Boundary $FGDarkBlue
 Start-Sleep -Seconds 1
 Write-Host ""
+

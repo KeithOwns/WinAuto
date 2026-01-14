@@ -199,7 +199,7 @@ function Write-LeftAligned {
     Write-Host (" " * $Indent + $Text)
 }
 
-function Write_Boundary {
+function Write-Boundary {
     param([string]$Color = $FGDarkBlue)
     Write-Host "$Color$([string]'_' * 60)$Reset"
 }
