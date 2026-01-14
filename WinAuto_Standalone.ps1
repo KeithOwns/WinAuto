@@ -337,7 +337,7 @@ function Write-LeftAligned {
 
 function Write-Boundary {
     param([string]$Color = $FGDarkBlue)
-    Write-Host "$Color$([string]$Char_EmDash * 60)$Reset"
+    Write-Host "$Color$([string]$Char_HeavyLine * 60)$Reset"
 }
 
 function Write-Header {
