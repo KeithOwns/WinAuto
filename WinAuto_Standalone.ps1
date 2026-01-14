@@ -501,7 +501,7 @@ function Invoke-AnimatedPause {
     Write-Host ""; $PromptCursorTop = [Console]::CursorTop
     if ($Timeout -le 0) {
         $PromptStr = "$FGWhite$Char_Keyboard Press ${FGBlack}${BGYellow}[S]${Reset}$FGWhite to $FGYellow$ActionText$FGWhite or ${FGRed}[Esc]${Reset}$FGWhite to ${FGRed}EXIT$Reset"
-        Write-Host $PromptStr
+        Write-Centered $PromptStr
         return $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
     $LocalTick = { param($Elapsed) & $Global:TickAction -ElapsedTimespan $Elapsed -ActionText $ActionText -Timeout $Timeout -PromptCursorTop $PromptCursorTop }
