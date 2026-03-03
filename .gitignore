@@ -1,0 +1,17 @@
+# PowerShell logs
+logs/
+*.log
+
+# Project specific slop
+nppBackup/
+*.bak
+*.tmp
+
+# User configuration / Local State
+config/
+!config/apps.json
+WinAuto_State.json
+
+# Windows specific
+Thumbs.db
+desktop.ini
