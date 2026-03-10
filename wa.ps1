@@ -2894,7 +2894,7 @@ while ($true) {
     Write-ColItem "Kernel Stack Protection" "SET_KernelMode.ps1" $s_Kern
     Write-ColItem "LSA Protection" "SET_LocalSecurity.ps1" $s_LSA
     Write-ColItem "Windows Firewall" "SET_FirewallON.ps1" $s_FW
-    Write-ColItem "App & browser control" "SET_AppBrowserControlUIA.ps1" $null
+    Write-ColItem "App & browser control" "UIA_AppBrowserCtrl.ps1" $null
     Write-ColItem "Classic Context Menu" "SET_ClassicMenu.ps1" $s_Ctx
     Write-ColItem "Taskbar Search Box" "SET_TaskbarSearch.ps1" $s_Task
     Write-ColItem "Task View Toggle" "SET_TaskViewOFF.ps1" $s_View
