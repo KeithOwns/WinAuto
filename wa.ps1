@@ -204,7 +204,6 @@ Security Actions:
 - Kernel Stack Protection   | Invoke-WA_SetKernelMode (UIA)
 - LSA Protection            | Invoke-WA_SetLocalSecurity (Registry)
 - Windows Firewall          | Invoke-WA_SetFirewallON (Set-NetFirewallProfile)
-- App & browser control     | Invoke-WA_TurnOnAppBrowserControl (UI Automation)
 - SmartScreen (UIA)         | Invoke-WA_SetSmartScreen (UI Automation)
 - Defender Remediation (UIA)| Invoke-WA_SetVirusThreatProtect (UI Automation)
 UI & UX Actions:
@@ -309,8 +308,6 @@ Memory Integrity,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SYSTEM\Curren
 Kernel Stack Protection,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\KernelShadowStacks (1),Yes,Yes,Security,Invoke-WA_SetKernelMode
 LSA Protection,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\RunAsPPL (1),Yes,Yes,Security,Invoke-WA_SetLocalSecurity
 Windows Firewall,Configure,wa.ps1 (Embedded),PowerShell Cmdlt,Set-NetFirewallProfile -Enabled True,Yes,No,Security,Invoke-WA_SetFirewallON
-App & browser control,Configure,wa.ps1 (Embedded),UI Automation,Automates Windows Security App & browser control,No,No,Security,Invoke-WA_TurnOnAppBrowserControl
-Classic Context Menu,Configure,wa.ps1 (Embedded),Registry (HKCU),HKCU:\Software\Classes\CLSID\{86ca1aa0...}\InprocServer32,Yes,No,UI,Invoke-WA_SetClassicMenu
 Taskbar Search Box,Configure,wa.ps1 (Embedded),Registry (HKCU),HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\SearchboxTaskbarMode (3),Yes,No,UI,Invoke-WA_SetTaskbarSearch
 Task View Toggle,Configure,wa.ps1 (Embedded),Registry (HKCU),HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ShowTaskViewButton (0),Yes,No,UI,Invoke-WA_SetTaskViewOFF
 SmartScreen (UIA),Configure,wa.ps1 (Embedded),UI Automation,Automates Windows Security App & Browser control,No,No,Security,Invoke-WA_SetSmartScreen
@@ -1467,12 +1464,13 @@ function Invoke-WinAutoConfiguration {
     }
     Write-Boundary
 
+    Invoke-WA_SetPUABlockDLs
+
     if (-not $SkipConfig) {
         # Core Security (Embedded Standalone)
         Invoke-WA_SetMemoryInteg
         Invoke-WA_SetRealTimeProt
         Invoke-WA_SetPUABlockApps
-        Invoke-WA_SetPUABlockDLs
         Invoke-WA_SetLocalSecurity
         Invoke-WA_SetFirewallON
         Invoke-WA_SetKernelMode
@@ -1495,7 +1493,6 @@ function Invoke-WinAutoConfiguration {
     
     if (-not $SkipConfig) {
         # UI & Performance (Embedded Standalone)
-        Invoke-WA_TurnOnAppBrowserControl
         Invoke-WA_SetClassicMenu
         Invoke-WA_SetTaskbarSearch
         Invoke-WA_SetTaskViewOFF
@@ -2546,60 +2543,6 @@ function Invoke-WA_WindowsRepair {
 
 }
 
-function Invoke-WA_TurnOnAppBrowserControl {
-    Write-Header "APP & BROWSER CONTROL"
-    
-    Write-LeftAligned "Launching Windows Security (App & browser control)..."
-    try {
-        Start-Process "windowsdefender://appbrowser"
-    }
-    catch {
-        Write-LeftAligned "$FGRed$Char_RedCross Failed to launch Windows Security: $($_.Exception.Message)$Reset"
-        return
-    }
-    
-    Start-Sleep -Seconds 3
-
-    $Desktop = [System.Windows.Automation.AutomationElement]::RootElement
-    $Window = $null
-    
-    Write-LeftAligned "Searching for Windows Security window..."
-    $sw = [System.Diagnostics.Stopwatch]::StartNew()
-    while ($sw.Elapsed.TotalSeconds -lt 15) {
-        $Window = Get-UIAElement -Parent $Desktop -Name "Windows Security" -ControlType ([System.Windows.Automation.ControlType]::Window) -Scope [System.Windows.Automation.TreeScope]::Children
-        if ($Window) { break }
-        Start-Sleep -Seconds 1
-    }
-
-    if ($Window) {
-        try { $Window.SetFocus() } catch {}
-        Start-Sleep -Seconds 1
-        
-        Write-LeftAligned "Searching for 'Turn on' button..."
-        $TurnOnBtn = Get-UIAElement -Parent $Window -Name "Turn on" -ControlType ([System.Windows.Automation.ControlType]::Button) -Scope [System.Windows.Automation.TreeScope]::Descendants
-        
-        if ($TurnOnBtn) {
-            try {
-                $InvokePattern = $TurnOnBtn.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
-                $InvokePattern.Invoke()
-                Write-LeftAligned "$FGGreen$Char_HeavyCheck Successfully clicked 'Turn on' button.$Reset"
-            }
-            catch {
-                Write-LeftAligned "$FGRed$Char_RedCross Found button but failed to click it.$Reset"
-            }
-        }
-        else {
-            Write-LeftAligned "$FGDarkYellow$Char_Warn Could not find 'Turn on' button (Already turned on?).$Reset"
-        }
-    }
-    else {
-        Write-LeftAligned "$FGRed$Char_RedCross Could not find Windows Security window.$Reset"
-    }
-    
-    Start-Sleep -Seconds 2
-}
-
-
 # --- END OF EMBEDDING ---
 
 # --- MAIN EXECUTION ---
@@ -2810,6 +2753,11 @@ while ($true) {
             $pad = " " * (28 - $Txt.Length); 
             Write-LeftAligned "$icon ${FGDarkGray}$Txt${Reset}$pad${FGDarkGray}| ${FGDarkGray}$Met${Reset}" -Indent 3  
         }
+        elseif ("ForceRun" -eq $Status) {
+            $icon = "${FGDarkGray}[${FGWhite}>${FGDarkGray}]${Reset}"
+            $pad = " " * (28 - $Txt.Length); 
+            Write-LeftAligned "$icon ${cDetailColor}$Txt${Reset}$pad${FGDarkGray}| ${cDetailColor}$Met${Reset}" -Indent 3  
+        }
         else {
             $icon = if ($null -eq $Status) { "${FGDarkGray}[?]${Reset}" } elseif ($Status) { "${FGDarkGray}[${FGDarkGreen}v${FGDarkGray}]${Reset}" } else { "${FGDarkGray}[${cTopColor}>${FGDarkGray}]${Reset}" }
             $pad = " " * (28 - $Txt.Length); 
@@ -2865,7 +2813,7 @@ while ($true) {
     # Registry Checks (Fast)
     function Test-Reg { param($P, $N, $V) try { (Get-ItemProperty $P $N -EA 0).$N -eq $V } catch { $false } }
     
-    $s_Edge = Test-Reg "HKCU:\Software\Microsoft\Edge\SmartScreenPuaEnabled" "(default)" 1
+    $s_Edge = "ForceRun"
     $s_Mem = Test-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" "Enabled" 1
     $s_Kern = Test-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\KernelShadowStacks" "Enabled" 1
     $s_LSA = Test-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RunAsPPL" 1
@@ -2873,7 +2821,7 @@ while ($true) {
     $s_View = Test-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0
     $s_MU = Test-Reg "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" "AllowMUUpdateService" 1
     $s_Rest = Test-Reg "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" "RestartNotificationsAllowed2" 1
-    $s_Pers = Test-Reg "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" "RestartApps" 1
+    $s_Pers = Test-Reg "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" "RestartApps" 1
     
 
     # Classic Context Menu Check (InprocServer32 Default Value must be empty string)
@@ -2894,7 +2842,6 @@ while ($true) {
     Write-ColItem "Kernel Stack Protection" "SET_KernelMode.ps1" $s_Kern
     Write-ColItem "LSA Protection" "SET_LocalSecurity.ps1" $s_LSA
     Write-ColItem "Windows Firewall" "SET_FirewallON.ps1" $s_FW
-    Write-ColItem "App & browser control" "UIA_AppBrowserCtrl.ps1" $null
     Write-ColItem "Classic Context Menu" "SET_ClassicMenu.ps1" $s_Ctx
     Write-ColItem "Taskbar Search Box" "SET_TaskbarSearch.ps1" $s_Task
     Write-ColItem "Task View Toggle" "SET_TaskViewOFF.ps1" $s_View
@@ -3094,6 +3041,8 @@ Write-Footer
 Write-Host ""
 Write-Centered "Copyright (c) 2026 WinAuto"
 Write-Host ""
+
+
 
 
 
