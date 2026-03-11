@@ -10,7 +10,7 @@ WinAuto is a lightweight, high-performance automation suite designed to streamli
 
 -   **Interactive Dashboard:** A modern, arrow-key driven CLI interface for manual and automated operations.
 -   **SmartRUN Automation:** Intelligent orchestration that audits system state and only applies changes where configuration drift is detected.
--   **Security Hardening:** Automates Microsoft Defender, Memory Integrity, Kernel Stack Protection, LSA Protection, and Windows Firewall.
+-   **Security Hardening:** Automates Microsoft Defender, Memory Integrity, Kernel Stack Protection, LSA Protection, App & browser control, and Windows Firewall.
 -   **Application Management:** Config-driven installer supporting WinGet, MSI, and EXE with silent deployment.
 -   **Automated Maintenance:** One-touch system repair (SFC/DISM), drive optimization, temp file cleanup, and suite updates.
 -   **Suite Updates:** Integrated self-updater that pulls the latest version directly from GitHub (via Git or ZIP).

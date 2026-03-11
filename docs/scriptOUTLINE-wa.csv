@@ -1,4 +1,4 @@
-﻿$Global:WinAutoCSVContent = @'
+
 ACTION,STAGE,SOURCE SCRIPT,METHOD,TECHNICAL DETAILS,REVERTIBLE,RESTART REQUIRED,IMPACT,FUNCTION
 Execution Policy / Admin Check,Pre-Run Setup,wa.ps1,Inline,Set-ExecutionPolicy RemoteSigned -Scope Process,N/A,No,System,(Script Header)
 Auto-Unblock,Pre-Run Setup,wa.ps1,Inline,Unblock-File (Self),N/A,No,System,(Script Header)
@@ -16,6 +16,7 @@ Memory Integrity,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SYSTEM\Curren
 Kernel Stack Protection,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\KernelShadowStacks (1),Yes,Yes,Security,Invoke-WA_SetKernelMode
 LSA Protection,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\RunAsPPL (1),Yes,Yes,Security,Invoke-WA_SetLocalSecurity
 Windows Firewall,Configure,wa.ps1 (Embedded),PowerShell Cmdlt,Set-NetFirewallProfile -Enabled True,Yes,No,Security,Invoke-WA_SetFirewallON
+App & browser control,Configure,wa.ps1 (Embedded),UI Automation,Automates Windows Security App & browser control,No,No,Security,Invoke-WA_TurnOnAppBrowserControl
 Classic Context Menu,Configure,wa.ps1 (Embedded),Registry (HKCU),HKCU:\Software\Classes\CLSID\{86ca1aa0...}\InprocServer32,Yes,No,UI,Invoke-WA_SetClassicMenu
 Taskbar Search Box,Configure,wa.ps1 (Embedded),Registry (HKCU),HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\SearchboxTaskbarMode (3),Yes,No,UI,Invoke-WA_SetTaskbarSearch
 Task View Toggle,Configure,wa.ps1 (Embedded),Registry (HKCU),HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ShowTaskViewButton (0),Yes,No,UI,Invoke-WA_SetTaskViewOFF
@@ -29,4 +30,4 @@ WinGet App Updates,Maintain,wa.ps1 (Embedded),Command Line,Checks for and update
 Drive Optimization,Maintain,wa.ps1 (Embedded),PowerShell Cmdlt,Optimize-Volume for all fixed disks (SSD=Trim; HDD=Defrag),No,No,Maintenance,Invoke-WA_OptimizeDisks
 Temp File Cleanup,Maintain,wa.ps1 (Embedded),File System,Clears Windows Temp and User Temp,No,No,Maintenance,Invoke-WA_SystemCleanup
 SFC / DISM Repair,Maintain,wa.ps1 (Embedded),Command Line,Runs SFC scan; if corruption found runs DISM image repair,No,No,Maintenance,Invoke-WA_WindowsRepair
-'@
+
