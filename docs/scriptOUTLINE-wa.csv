@@ -24,8 +24,6 @@ Microsoft Update Service,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SOFTW
 Restart Notifications,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings\RestartNotificationsAllowed2 (1),Yes,No,Config,Invoke-WA_SetRestartIsReq
 App Restart Persistence,Configure,wa.ps1 (Embedded),Registry (HKCU),HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\RestartApps (1),Yes,No,Config,Invoke-WA_SetRestartApps
 Get Updates,Maintain,wa.ps1 (Embedded),UI Automation,Automates Windows Update Settings and MS Store updates,No,No,Maintenance,Invoke-WA_WindowsUpdate
-WinGet App Updates,Maintain,wa.ps1 (Embedded),Command Line,Checks for and updates all apps via WinGet,No,No,Maintenance,Invoke-WA_WindowsUpdate
 Drive Optimization,Maintain,wa.ps1 (Embedded),PowerShell Cmdlt,Optimize-Volume for all fixed disks (SSD=Trim; HDD=Defrag),No,No,Maintenance,Invoke-WA_OptimizeDisks
 Temp File Cleanup,Maintain,wa.ps1 (Embedded),File System,Clears Windows Temp and User Temp,No,No,Maintenance,Invoke-WA_SystemCleanup
 SFC / DISM Repair,Maintain,wa.ps1 (Embedded),Command Line,Runs SFC scan; if corruption found runs DISM image repair,No,No,Maintenance,Invoke-WA_WindowsRepair
-

@@ -259,35 +259,32 @@ $Global:RegPath_Winlogon_Machine = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentV
 # --- MANIFEST CONTENT ---
 
 $Global:WinAutoManifestContent = @"
-${FGDarkCyan}============================================================${Reset}
-${FGDarkCyan}__________________________________________________________${Reset}
-${FGCyan}ACTION${Reset}                   ${FGDarkGray}|${Reset} ${FGCyan}STAGE${Reset}    ${FGDarkGray}|${Reset} ${FGDarkCyan}SOURCE SCRIPT${Reset}
-${FGDarkGray}----------------------------------------------------------${Reset}
-Adobe Creative Cloud     ${FGDarkGray}|${Reset} ${FGDarkCyan}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_AdobeCC.ps1${Reset}
-Box Drive                ${FGDarkGray}|${Reset} ${FGDarkCyan}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_BoxDrive.ps1${Reset}
-Box for Office           ${FGDarkGray}|${Reset} ${FGDarkCyan}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_BoxOffice.ps1${Reset}
-Box Tools                ${FGDarkGray}|${Reset} ${FGDarkCyan}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_BoxTools.ps1${Reset}
-Crestron AirMedia        ${FGDarkGray}|${Reset} ${FGDarkCyan}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_AirMedia.ps1${Reset}
-Real-Time Protection     ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-PUA Protection           ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-PUA Protection (Edge)    ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Memory Integrity         ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Kernel Stack Protection  ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-LSA Protection           ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Windows Firewall         ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Classic Context Menu     ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Taskbar Search Box       ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Task View Toggle         ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Microsoft Update Service ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Restart Notifications    ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-App Restart Persistence  ${FGDarkGray}|${Reset} ${FGBlue}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Get Updates              ${FGDarkGray}|${Reset} ${FGDarkBlue}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-WinGet App Updates       ${FGDarkGray}|${Reset} ${FGDarkBlue}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Drive Optimization       ${FGDarkGray}|${Reset} ${FGDarkBlue}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-Temp File Cleanup        ${FGDarkGray}|${Reset} ${FGDarkBlue}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-SFC / DISM Repair        ${FGDarkGray}|${Reset} ${FGDarkBlue}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa.ps1 (Embedded)${Reset}
-${FGDarkCyan}__________________________________________________________${Reset}
-${FGDarkCyan}__________________________________________________________${Reset}
+  ${FGDarkCyan}__________________________________________________________${Reset}
+  ${FGDarkCyan}ACTION${Reset}                   ${FGDarkGray}|${Reset} ${FGDarkCyan}STAGE${Reset}    ${FGDarkGray}|${Reset} ${FGDarkCyan}SOURCE SCRIPT${Reset}
+  ${FGDarkGray}----------------------------------------------------------${Reset}
+  Adobe Creative Cloud     ${FGDarkGray}|${Reset} ${FGGray}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_AdobeCC${Reset}
+  Box Drive                ${FGDarkGray}|${Reset} ${FGGray}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_BoxDrive${Reset}
+  Box for Office           ${FGDarkGray}|${Reset} ${FGGray}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_BoxOffice${Reset}
+  Box Tools                ${FGDarkGray}|${Reset} ${FGGray}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_BoxTools${Reset}
+  Crestron AirMedia        ${FGDarkGray}|${Reset} ${FGGray}Install${Reset}  ${FGDarkGray}|${Reset} ${FGGray}INSTALL_AirMedia${Reset}
+  Real-Time Protection     ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  PUA Protection           ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  PUA Protection (Edge)    ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Memory Integrity         ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Kernel Stack Protection  ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  LSA Protection           ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Windows Firewall         ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Classic Context Menu     ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Taskbar Search Box       ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Task View Toggle         ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Microsoft Update Service ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Restart Notifications    ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  App Restart Persistence  ${FGDarkGray}|${Reset} ${FGGray}Configure${Reset}${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Get Updates              ${FGDarkGray}|${Reset} ${FGGray}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Drive Optimization       ${FGDarkGray}|${Reset} ${FGGray}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  Temp File Cleanup        ${FGDarkGray}|${Reset} ${FGGray}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  SFC / DISM Repair        ${FGDarkGray}|${Reset} ${FGGray}Maintain${Reset} ${FGDarkGray}|${Reset} ${FGGray}wa (Embedded)${Reset}
+  ${FGDarkCyan}__________________________________________________________${Reset}
 "@
 
 $Global:WinAutoCSVContent = @'
@@ -316,7 +313,6 @@ Microsoft Update Service,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SOFTW
 Restart Notifications,Configure,wa.ps1 (Embedded),Registry (HKLM),HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings\RestartNotificationsAllowed2 (1),Yes,No,Config,Invoke-WA_SetRestartIsReq
 App Restart Persistence,Configure,wa.ps1 (Embedded),Registry (HKCU),HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\RestartApps (1),Yes,No,Config,Invoke-WA_SetRestartApps
 Get Updates,Maintain,wa.ps1 (Embedded),UI Automation,Automates Windows Update Settings and MS Store updates,No,No,Maintenance,Invoke-WA_WindowsUpdate
-WinGet App Updates,Maintain,wa.ps1 (Embedded),Command Line,Checks for and updates all apps via WinGet,No,No,Maintenance,Invoke-WA_WindowsUpdate
 Drive Optimization,Maintain,wa.ps1 (Embedded),PowerShell Cmdlt,Optimize-Volume for all fixed disks (SSD=Trim; HDD=Defrag),No,No,Maintenance,Invoke-WA_OptimizeDisks
 Temp File Cleanup,Maintain,wa.ps1 (Embedded),File System,Clears Windows Temp and User Temp,No,No,Maintenance,Invoke-WA_SystemCleanup
 SFC / DISM Repair,Maintain,wa.ps1 (Embedded),Command Line,Runs SFC scan; if corruption found runs DISM image repair,No,No,Maintenance,Invoke-WA_WindowsRepair
@@ -691,7 +687,7 @@ $Global:TickAction = {
         
         # User defined footer with colors
         # Use ^ v keys then press Space to RUN | Esc to EXIT
-        $Line = "                       ${Global:FGYellow}Navigation${Global:Reset} ${Global:FGBlack}${Global:BGDarkCyan}KEYS${Global:Reset}                       `n   ${Global:FGBlack}${Global:BGDarkCyan} ^ ${Global:Reset}  ${Global:FGGray}arrow${Global:Reset}  ${Global:FGBlack}${Global:BGDarkCyan} v ${Global:Reset}  ${Global:FGGray}keys${Global:Reset} ${Global:FGYellow}->${Global:Reset}${Global:FGDarkGray}|${Global:Reset}${Global:FGBlack}${Global:BGYellow}Select${Global:Reset}${Global:FGDarkGray}|${Global:Reset}${Global:FGYellow}<-${Global:Reset} ${Global:FGDarkGray}|${Global:Reset} ${Global:FGBlack}${Global:BGDarkCyan}I${Global:Reset}${Global:FGWhite}nfo${Global:Reset} ${Global:FGDarkGray}|${Global:Reset} ${Global:FGBlack}${Global:BGDarkRed}Esc${Global:Reset} ${Global:FGGray}to${Global:Reset} ${Global:FGDarkRed}${Global:BGWhite}EXIT${Global:Reset}"
+        $Line = "  ${Global:FGBlack}${Global:BGYellow} ^ ${Global:Reset} ${Global:FGGray}arrow${Global:Reset} ${Global:FGBlack}${Global:BGYellow} v ${Global:Reset} ${Global:FGGray}keys${Global:Reset}  ${Global:FGDarkGray}|${Global:Reset}  ${Global:FGBlack}${Global:BGYellow}I${Global:Reset}${Global:FGWhite}nfo${Global:Reset}  ${Global:FGDarkGray}|${Global:Reset}  ${Global:FGBlack}${Global:BGYellow}Esc${Global:Reset} ${Global:FGGray}to${Global:Reset} ${Global:FGDarkRed}${Global:BGWhite}EXIT${Global:Reset}"
     }
 
     try { [Console]::SetCursorPosition(0, $PromptCursorTop); Write-Host $Line } catch {}
@@ -1554,11 +1550,12 @@ function Invoke-WinAutoMaintenance {
             Set-WinAutoLastRun -Module "Maintenance_Cleanup"
         }
     
-        # Run Windows Update Action (Skip if run in last 24 hours)
+        # Run Windows Update (Skip if run in last 24 hours)
         if (Test-RunNeeded -Key "Maintenance_WinUpdate" -Days 1) {
             Invoke-WA_WindowsUpdate
             Set-WinAutoLastRun -Module "Maintenance_WinUpdate"
         }
+
 
         Write-Host ""
         Write-Centered "$FGGreen MAINTENANCE COMPLETE $Reset"
@@ -2263,61 +2260,6 @@ function Invoke-WA_SetRestartApps {
 
 # --- EMBEDDED ATOMIC SCRIPTS (Maintenance Part 4) ---
 
-function Invoke-WA_WingetUpgrade {
-    <#
-.SYNOPSIS
-    WinGet Application Updater.
-.DESCRIPTION
-    Updates all installed applications using Windows Package Manager (winget).
-    Standalone version. Includes Reverse Mode (-r) stub.
-.PARAMETER Reverse
-    (Alias: -r) No-Op. Upgrades cannot be reversed automatically.
-#>
-    param(
-        [Parameter(Mandatory = $false)]
-        [Alias('r')]
-        [switch]$Reverse,
-        [switch]$Undo
-    )
-    Write-Header "WINGET APP UPDATE"
-
-    if ($Reverse) {
-        Write-LeftAligned "$FGYellow$Char_Warn Reverse Mode: App upgrades cannot be reversed automatically.$Reset"
-        Write-Host ""
-        $copyright = "Copyright (c) 2026 WinAuto"; $cPad = [Math]::Floor((60 - $copyright.Length) / 2); Write-Host (" " * $cPad + "$FGCyan$copyright$Reset"); Write-Host ""
-        return
-    }
-
-    # Check for WinGet
-    if (-not (Get-Command winget.exe -ErrorAction SilentlyContinue)) {
-        Write-LeftAligned "$FGRed$Char_Warn WinGet is not installed or not in PATH.$Reset"
-        Write-LeftAligned "Please install App Installer from the Microsoft Store."
-        return
-    }
-
-    Write-LeftAligned "$FGGray Running winget upgrade --all...$Reset"
-    Write-Host ""
-
-    try {
-        $wingetArgs = @(
-            "upgrade",
-            "--all",
-            "--include-unknown",
-            "--accept-package-agreements",
-            "--accept-source-agreements",
-            "--silent"
-        )
-    
-        Start-Process "winget.exe" -ArgumentList $wingetArgs -Wait -NoNewWindow
-    
-        Write-Host ""
-        Write-LeftAligned "$FGGreen$Char_HeavyCheck WinGet update completed.$Reset"
-    }
-    catch {
-        Write-LeftAligned "$FGRed$Char_Warn Update failed: $($_.Exception.Message)$Reset"
-    }
-
-}
 
 function Invoke-WA_OptimizeDisks {
     <#
@@ -2655,11 +2597,9 @@ while ($true) {
 
     if ($MenuSelection -eq 0) {
         Write-Centered "${FGBlack}${BGDarkGray}__MANUAL-MODE-OFF__${Reset}"
-        # Alternative: Write-Centered "${FGBlack}${BGDarkGray}  MANUAL-MODE-OFF  ${Reset}"
     }
     else {
-        # Align with 56-char boundary lines (2 space indent + 56 char block)
-        Write-Host "  ${Global:BGDarkCyan}${Global:FGBlack}                   __MANUAL-MODE-ON__                   ${Global:Reset}"
+        Write-Host "  ${Global:FGBlack}${Global:BGYellow}___________________MANUAL MODE_________________${Global:Reset}"
     }
     Write-Boundary # Separator
 
@@ -2727,13 +2667,12 @@ while ($true) {
     Write-Host ""
     Write-Boundary # Separator
 
-    # MANUAL-MODE (Pos 2) - Runs Configure + Maintain, all steps forced
+    # Configure Operating System (Pos 2) - MANUAL-MODE
     if ($MenuSelection -eq 2) {
-        # Align with 56-char boundary lines (2 space indent + 56 char block)
-        Write-Host "  ${FGBlack}${BGYellow}                      MANUAL-MODE                      ${Reset}"
+        Write-Host "  ${FGBlack}${BGYellow}               Configure Operating System               ${Reset}"
     }
     else {
-        Write-Centered "${manualHeaderColor}|${Reset} ${manualHeaderColor}MANUAL-MODE${Reset} ${manualHeaderColor}|${Reset}"
+        Write-Centered "${manualHeaderColor}|${Reset} ${manualHeaderColor}Configure Operating System${Reset} ${manualHeaderColor}|${Reset}"
     }
     Write-Host ""
     
@@ -2890,7 +2829,6 @@ while ($true) {
     Write-LeftAligned "${FGDarkGray}[${mTopColor}#${FGDarkGray}]${mTopColor} OF DAYS SINCE LAST RUN      ${FGDarkGray}|${mTopColor} ATOMIC_SCRIPT$Reset" -Indent 3
     Write-Centered "${FGDarkGray}--------------------------------------------------------$Reset"
     Write-MaintItem "Get Updates" "RUN_UpdateSuite.ps1" "Maintenance_WinUpdate" -Threshold 1
-    Write-MaintItem "WinGet App Updates" "RUN_WingetUpgrade.ps1" "Maintenance_WinUpdate" -Threshold 1
     Write-MaintItem "Drive Optimization" "RUN_OptimizeDisks.ps1" "Maintenance_Disk" -Threshold 7
     Write-MaintItem "Temp File Cleanup" "RUN_SystemCleanup.ps1" "Maintenance_Cleanup" -Threshold 7
     Write-MaintItem "SFC / DISM Repair" "RUN_WindowsRepair.ps1" "Maintenance_SFC" -Threshold 30
@@ -3003,16 +2941,13 @@ while ($true) {
             }
         }
         Write-Host ""
-        Write-Host "                       ${Global:FGYellow}Navigation${Global:Reset} ${Global:FGBlack}${Global:BGDarkCyan}KEYS${Global:Reset}                       `n  ${Global:FGBlack}${Global:BGDarkCyan}Enter${Global:Reset} ${Global:FGGray}to export CSV${Global:Reset} ${Global:FGDarkGray}|${Global:Reset} ${Global:FGYellow}->${Global:Reset}${Global:FGDarkGray}|${Global:Reset}${Global:FGBlack}${Global:BGYellow}Space${Global:Reset}${Global:FGDarkGray}|${Global:Reset}${Global:FGYellow}<-${Global:Reset} ${Global:FGGray}to return${Global:Reset} ${Global:FGDarkGray}|${Global:Reset} ${Global:FGBlack}${Global:BGDarkCyan}Esc${Global:Reset} ${Global:FGGray}to${Global:Reset} ${Global:FGDarkRed}${Global:BGWhite}EXIT${Global:Reset}"
+        Write-Host "  ${Global:FGBlack}${Global:BGYellow}Enter${Global:Reset} ${Global:FGGray}to export CSV${Global:Reset}  ${Global:FGDarkGray}|${Global:Reset}  ${Global:FGBlack}${Global:BGYellow}Esc${Global:Reset} ${Global:FGGray}to return${Global:Reset}"
         while ($true) {
             $mk = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
             if ($mk.Character -eq ' ' -or $mk.VirtualKeyCode -eq 32 -or $mk.Character -eq 'I' -or $mk.Character -eq 'i') { break }
             if ($mk.VirtualKeyCode -eq 27) { 
-                # Esc pressed - exit script
-                Write-Host ""
-                Write-Centered "Copyright (c) 2026 WinAuto"
-                Write-Host ""
-                return
+                # Esc pressed - return to dashboard
+                break
             }
             if ($mk.VirtualKeyCode -eq 13) {
                 # Enter pressed - export CSV
