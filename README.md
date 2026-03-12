@@ -21,15 +21,15 @@ WinAuto is a lightweight, high-performance automation suite designed to streamli
 1.  **Elevate:** Open a PowerShell window as **Administrator**.
 2.  **Run:** Execute the script:
     ```powershell
-    .\wa.ps1
+    .\WinAuto.ps1
     ```
 3.  **Navigate:** Use the `^` and `v` arrow keys to select sections.
 4.  **Execute:** Press `Space` to run the selected section or `SmartRUN`.
-5.  **Info:** Press `I` to view the functional outline and export a technical CSV map.
+5.  **Info:** Press `I` to view the functional outline. From the Info page, press `Enter` to export a technical CSV map or `Esc` to return to the dashboard.
 
 ## 📁 Project Structure
 
--   `wa.ps1`: The primary script containing the dashboard and embedded logic.
+-   `WinAuto.ps1`: The primary script containing the dashboard and embedded logic.
 -   `scripts/AtomicScripts/Installers/`: Atomic installation scripts called by the main suite.
 -   `logs/`: Local execution logs (`wa.log`).
 
